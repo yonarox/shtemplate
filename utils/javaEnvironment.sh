@@ -8,20 +8,23 @@
 # Hewlett-Packard Company | EBS
 # 
 
-# load additional funcions
-. ${APPATH}/utils/libUtils.sh
+export CLASSPATH=
+export JAVA_HOME=
 
 javaEnvironment ()
 {
   # Language
-  LANG=es_MX.iso88591
+  LANG="es_MX.iso88591"
 
-  # java's environment
+  # java flags environment
   JAVA_FLAGS=
 
   # Initial and Maximum size of the Java Heap
-  JAVA_FLAGS="${JAVA_FLAGS} -Xms512m"
-  JAVA_FLAGS="${JAVA_FLAGS} -Xmx512m"
+  [ -z "${APMINI}" -o "${APMINI}" == "default" ] && APMINI="32m"
+  JAVA_FLAGS="${JAVA_FLAGS} -Xms${APMINI}"
+
+  [ -z "${APMMAX}" -o "${APMMAX}" == "default" ] && APMMAX="32m"
+  JAVA_FLAGS="${JAVA_FLAGS} -Xmx${APMMAX}"
 
   # Size of the heap reserved for the permanent generation hold
   JAVA_FLAGS="${JAVA_FLAGS} -XX:PermSize=64m"

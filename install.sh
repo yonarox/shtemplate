@@ -13,28 +13,28 @@ mkdir -p ~/bin
 mkdir -p ~/manuals/man1
 
 echo "[2] - Migrating all config files to new version..."
-cd ~/ShellTemplate.git/conf/
-[ -d ~/ShellT ] && cp -rp ~/ShellTemplate/conf/*.conf .
+cd ~/shtemplate.git/conf/
+[ -d ~/shtemplate ] && cp -rp ~/shtemplate/conf/*.conf .
 for ap in *.conf
 do
-  ln -sf ../shelltemplate.sh ${ap%.conf}.start
+  ln -sf ../shtemplate.sh ${ap%.conf}.start
 done
 
 echo "[3] - Switching to new version..."
 cd ~
-[ -d ~/shelltemplate.old ] && rm -fr ~/shelltemplate.old
-[ -d ~/shelltemplate ] && mv ~/shelltemplate ~/shelltemplate.old
-[ -d ~/shelltemplate.git ] && mv ~/shelltemplate.git ~/shelltemplate
+[ -d ~/shtemplate.old ] && rm -fr ~/shtemplate.old
+[ -d ~/shtemplate ] && mv ~/shtemplate ~/shtemplate.old
+[ -d ~/shtemplate.git ] && mv ~/shtemplate.git ~/shtemplate
 
 echo "[4] - Installing unix documentation..."
-cp ~/shelltemplate/man1/shelltemplate.1 ~/manuals/man1/
-ln -sf ~/shelltemplate/shelltemplate.sh ~/shelltemplate/shelltemplate.version
-ln -sf ~/shelltemplate/shelltemplaterc ~/.shelltemplaterc
-ln -sf ~/shelltemplate/screenrc ~/.screenrc
+cp ~/shtemplate/man1/shtemplate.1 ~/manuals/man1/
+ln -sf ~/shtemplate/shtemplate.sh ~/shtemplate/shtemplate.version
+ln -sf ~/shtemplate/shtemplaterc ~/.shtemplaterc
+ln -sf ~/shtemplate/screenrc ~/.screenrc
 
 echo "[5] - Fixing permissiont..."
-chmod 0640 ~/shelltemplate/install.sh 
-chmod 0550 ~/shelltemplate/shelltemplate.sh
+chmod 0640 ~/shtemplate/install.sh 
+chmod 0550 ~/shtemplate/shtemplate.sh
 
 echo "[*] - That's all..."
 #
@@ -47,7 +47,7 @@ then
 fi
 
 # create RC file
-[ -h ${HOME}/.shelltemplaterc ] && rm -f ${HOME}/.shelltemplaterc
-ln -sf ${CURRENT}/setEnvironment.rc ${HOME}/.shelltemplaterc 
+[ -h ${HOME}/.shtemplaterc ] && rm -f ${HOME}/.shtemplaterc
+ln -sf ${CURRENT}/setEnvironment.rc ${HOME}/.shtemplaterc 
 
 #

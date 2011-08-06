@@ -1,58 +1,102 @@
 ShellTemplate
+-------------
 An Small Shell Template for start/stop simple projects
-=
-
-Developed by
-   Andres Aquino <aquino(at)hp.com>
-
-Source Code
-   [GitHub]       http://andresaquino.github.com/ShellTemplate
-   [GoggleCode]   http://shelltemplate.googlecode.com/svn/trunk/
-   [Bugtracker]   http://github.com/andresaquino/shelltemplate/issues
-
-Proposito
-   Crear una plantilla para desarrollar aplicaciones que se ejecutan en shell, la necesidad viene
-   de homologar la manera en como se desarrollan este tipo de aplicaciones al tener diferentes
-   grupos de trabajo; de esta manera, el implementar una plantilla nos permite contextualizar los
-   diferentes archivos necesarios y las puestas en produccion deberan de ser (en teoria) mucho mas
-   sencillas y ordenadas.
-
-Esquema
-   .
-   ├── install.sh                      # Instalacion
-   ├── backups                         # Directorio de Backups
-   │   └── *.bkp
-   ├── bin                             # shells de aplicacion
-   │   └── myApplication.sh
-   ├── conf                            # configuracion (log4j,rc)
-   │   ├── log4j.properties
-   │   ├── private.key
-   │   └── setEnvironment.rc
-   ├── libs                            # donde ubicar los jars
-   │   └── *.jar
-   ├── logs                            # por si no usan soya o monopse
-   │   └── *.log
-   ├── manual                          # si acaso llegan a ensamblar un man
-   │   ├── myApplication.1
-   │   └── myApplication.pod
-   ├── utils                           # utilerias
-   │   ├── decryptMe.sh
-   │   ├── encryptMe.sh
-   │   ├── libutils.sh
-   │   ├── myApplication.check
-   │   ├── myApplication.start
-   │   └── myApplication.stop
-   ├── LICENSE
-   ├── README
-   └── ROADMAP
 
 
-De la configuracion
-Usar un archivo de configuracion general donde se coloquen los parametros requeridos por la
-aplicacion. Este archivo puede referenciarse por una liga desde el home del usuario para poder
-ubicar los contextos de ejecucion.
+### Developed by
 
-Ejemplo:
+Andres Aquino <aquino(at)hp.com>
+
+
+### Source Code
+
+[GitHub]       http://andresaquino.github.com/ShellTemplate
+[GoggleCode]   http://shelltemplate.googlecode.com/svn/trunk/
+[Bugtracker]   http://github.com/andresaquino/shelltemplate/issues
+
+
+### Overview
+
+Crear una plantilla para desarrollar aplicaciones que se ejecutan en shell,
+la necesidad viene de homologar la manera en como se desarrollan este tipo 
+de aplicaciones al tener diferentes grupos de trabajo; de esta manera, el 
+implementar una plantilla nos permite contextualizar los diferentes archivos 
+necesarios y las puestas en produccion deberan de ser (en teoria) mucho mas 
+sencillas y ordenadas.
+
+A simple template for build shell applications, the purpose is standardize 
+development, stablishing model of convention over configuration (like rails) 
+meanwhile help transitions of development to production environments.
+
+Do you want help us, send us your commits <aquino@hp.com>
+
+
+### Structure
+
+    Directorio base
+        .
+        ├── shelltemplate                   # Instalacion
+        ├── backups                         # Directorio de Backups
+        │   └── *.bkp
+        ├── bin                             # shells de aplicacion
+        │   ├── shtemplate.sh
+        │   ├── decrypt.sh
+        │   ├── encrypt.sh
+        │   └── shtemplate.
+        ├── conf                            # configuracion (log4j,rc)
+        │   ├── log4j.properties
+        │   ├── shtemplate.conf
+        │   ├── shtemplate.key
+        │   └── shtemplate.rc
+        ├── libs                            # donde ubicar los jars
+        │   ├── log4j-1.2.15.jar
+        │   └── *.jar
+        ├── logs                            # por si no usan soya o monopse
+        │   └── *.log
+        ├── manual                          # si acaso llegan a ensamblar un man
+        │   ├── shtemplate.1
+        │   └── shtemplate.pod
+        ├── utils                           # utilerias
+        │   ├── shdecrypt.sh
+        │   ├── shencrypt.sh
+        │   ├── libutils.sh
+        │   └── sh
+        ├── LICENSE
+        ├── README
+        └── ROADMAP
+
+    Aplicacion
+        .
+        ├── backups 
+        │   └── *.bkp
+        ├── bin 
+        │   ├── myApplication.start -> 
+        │   │        ${HOME}/ShellTemplate/bin/shelltemplate.start
+        │   ├── myApplication.stop  -> 
+        │   │        ${HOME}/ShellTemplate/bin/shelltemplate.stop
+        │   └── myApplication.check -> 
+        │            ${HOME}/ShellTemplate/bin/shelltemplate.check
+        ├── conf 
+        │   ├── myApplication.conf
+        │   ├── log4j.properties
+        │   └── setEnvironment.rc
+        ├── libs 
+        │   └── *.jar
+        ├── logs 
+        │   └── *.log
+        └── README
+
+
+### Workflow
+
+Use a configuration file where 
+
+Usar un archivo de configuracion general donde se coloquen los parametros 
+requeridos por la aplicacion. Este archivo puede referenciarse por una 
+liga desde el home del usuario para poder ubicar los contextos de ejecucion.
+
+Examples
+
  - el directorio de ejecucion se encuentra en:
       /opt/apps/batch/ShellTemplate
 
@@ -74,12 +118,78 @@ Ejemplo:
       . ${HOME}/.shelltemplaterc
       ...
 
-La idea de hacer este tipo de configuracion, es usar las rutas por defecto del sistema operativo (en
-este caso el $HOME del usuario) para poder cargar los parametros de las aplicaciones y evitar
-conflictos por realizar la ejecucion de las mismas al no encontrarse dentro de los directorios de
-ejecucion. De esta manera se puede ejecutar el shell desde cualquier ubicacion y estaremos seguros
-de que este se ejecutara acorde a nuestros parametros.
+
+### Configuration files 
+
+shtemplate.conf
+<pre>
+# CONF 
+# vim: set ts=2 sw=2 sts=2 et si ai syntax=sh: 
+
+# appexample.conf 
+# =
+# 
+# Andres Aquino <aquino(at)hp.com>
+# Hewlett Packard Company | EBS
+# 
+
+# Description  : java version to use, 
+# Required     : no, by default use java15
+APJVER="[ java14 | java15 | java16 ]"
+
+# Description  : how execute the application, in background (like a server) or not?
+# Required     : yes
+APTYPE="[ foreground | background ]"
+
+# Description  : language required by the application
+# Required     : no, by default C
+APLANG="[default|Americas/Mexico]"
+
+# Description  : Initial Size of memory required by java process
+# Required     : no, by default set to 32m
+APMINI="[default|32m,64m,128m,...]"
+
+# Description  : Maximum Size of memory required by java process
+# Required     : no, by default set to 32m
+APMMAX="[default|32m,64m,128m,...]"
+
+# Description  : Initial Permanent Size of memory required by java process
+# Required     : no, by default set to 16m
+APPINI="[default|32m,64m,128m,...]"
+
+# Description  : Maximum Permanent Size of memory required by java process
+# Required     : no, by default set to 16m
+APPMAX="[default|32m,64m,128m,...]"
+
+# Description  : Flag, is required a Memory Heapdump of java process?
+# Required     : no
+APFHDB="[yes|no]"
+
+# Description  : Flag, is required a Thread Heapdump of java process?
+# Required     : no
+APFTDB="[yes|no]"
+
+# Description  : Security Policy, necessary to grant access on all java process
+# Required     : no
+APFSPL="[yes|no]"
+
+# Description  : Java Classpath, build with all jar files founded in $APP/libs or require a strict load order
+# Required     : no
+APCLSS="[default|libs/uno.jar:libs/dos.jar:libs/tres.jar]"
+
+# Description  : 
+# Required     :
+APCMND="rmiregistry 10089"
+
+</pre>
+
+La idea de hacer este tipo de configuracion, es usar las rutas por defecto 
+del sistema operativo (en este caso el $HOME del usuario) para poder cargar 
+los parametros de las aplicaciones y evitar conflictos por realizar la 
+ejecucion de las mismas al no encontrarse dentro de los directorios de 
+ejecucion. De esta manera se puede ejecutar el shell desde cualquier ubicacion 
+y estaremos seguros de que este se ejecutara acorde a nuestros parametros.
 
 
 
-# vim: set ts=3 et sw=3 sts=3 si ai tw=100 lbr syntax=txt:
+# vim: set ts=4 et sw=4 sts=4 si ai wrap tw=90 lbr syntax=txt:

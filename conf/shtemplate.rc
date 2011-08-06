@@ -1,0 +1,16 @@
+# CONF 
+# vim: set ts=2 sw=2 sts=2 et si ai syntax=sh: 
+
+# shtemplate.rc
+# =
+# 
+# Andres Aquino <aquino(at)hp.com>
+# Hewlett Packard Company | EBS
+# 
+
+# Description  : java version to use, 
+# Required     : no, by default use java15
+APJVER="[ java14 | java15 | java16 ]"
+
+
+
