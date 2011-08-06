@@ -1,4 +1,4 @@
-ShellTemplate
+shTemplate
 -------------
 An Small Shell Template for start/stop simple projects
 
@@ -10,9 +10,11 @@ Andres Aquino <aquino(at)hp.com>
 
 ### Source Code
 
-[GitHub]       http://andresaquino.github.com/ShellTemplate
-[GoggleCode]   http://shelltemplate.googlecode.com/svn/trunk/
-[Bugtracker]   http://github.com/andresaquino/shelltemplate/issues
+[GitHub]       http://andresaquino.github.com/shtemplate
+
+[GoggleCode]   http://shtemplate.googlecode.com/svn/trunk/
+
+[Bugtracker]   http://github.com/andresaquino/shtemplate/issues
 
 
 ### Overview
@@ -71,11 +73,11 @@ Do you want help us, send us your commits <aquino@hp.com>
         │   └── *.bkp
         ├── bin 
         │   ├── myApplication.start -> 
-        │   │        ${HOME}/ShellTemplate/bin/shelltemplate.start
+        │   │        ${HOME}/shtemplate/bin/shtemplate.start
         │   ├── myApplication.stop  -> 
-        │   │        ${HOME}/ShellTemplate/bin/shelltemplate.stop
-        │   └── myApplication.check -> 
-        │            ${HOME}/ShellTemplate/bin/shelltemplate.check
+        │   │        ${HOME}/shtemplate/bin/shtemplate.stop
+        │   └── myApplication.check ->
+        │            ${HOME}/shtemplate/bin/shtemplate.check
         ├── conf 
         │   ├── myApplication.conf
         │   ├── log4j.properties
