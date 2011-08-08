@@ -19,15 +19,15 @@ Andres Aquino <aquino(at)hp.com>
 
 ### Overview
 
-Crear una plantilla para desarrollar aplicaciones que se ejecutan en shell,
-la necesidad viene de homologar la manera en como se desarrollan este tipo 
-de aplicaciones al tener diferentes grupos de trabajo; de esta manera, el 
-implementar una plantilla nos permite contextualizar los diferentes archivos 
-necesarios y las puestas en produccion deberan de ser (en teoria) mucho mas 
+Crear una plantilla para desarrollar aplicaciones que se ejecutan en shell, la
+necesidad  necesidad viene de homologar la manera en como se desarrollan este
+tipo de aplicaciones al tener diferentes grupos de trabajo; de esta manera, el
+implementar una plantilla nos permite contextualizar los diferentes archivos
+necesarios y las puestas en produccion deberan de ser (en teoria) mucho mas
 sencillas y ordenadas.
 
-A simple template for build shell applications, the purpose is standardize 
-development, stablishing model of convention over configuration (like rails) 
+A simple template for build shell applications, the purpose is standardize
+development, stablishing model of convention over configuration (like rails)
 meanwhile help transitions of development to production environments.
 
 Do you want help us, send us your commits <aquino@hp.com>
@@ -93,9 +93,9 @@ Do you want help us, send us your commits <aquino@hp.com>
 
 Use a configuration file where 
 
-Usar un archivo de configuracion general donde se coloquen los parametros 
-requeridos por la aplicacion. Este archivo puede referenciarse por una 
-liga desde el home del usuario para poder ubicar los contextos de ejecucion.
+Usar un archivo de configuracion general donde se coloquen los parametros
+requeridos por la aplicacion. Este archivo puede referenciarse por una liga
+desde el home del usuario para poder ubicar los contextos de ejecucion.
 
 Examples
 
@@ -124,6 +124,7 @@ Examples
 ### Configuration files 
 
 shtemplate.conf
+
 <pre>
 # CONF 
 # vim: set ts=2 sw=2 sts=2 et si ai syntax=sh: 
@@ -185,13 +186,11 @@ APCMND="rmiregistry 10089"
 
 </pre>
 
-La idea de hacer este tipo de configuracion, es usar las rutas por defecto 
-del sistema operativo (en este caso el $HOME del usuario) para poder cargar 
-los parametros de las aplicaciones y evitar conflictos por realizar la 
-ejecucion de las mismas al no encontrarse dentro de los directorios de 
-ejecucion. De esta manera se puede ejecutar el shell desde cualquier ubicacion 
-y estaremos seguros de que este se ejecutara acorde a nuestros parametros.
+La idea de hacer este tipo de configuracion, es usar las rutas por defecto del
+sistema operativo (en este caso el $HOME del usuario) para poder cargar los
+parametros de las aplicaciones y evitar conflictos por realizar la ejecucion de
+las mismas al no encontrarse dentro de los directorios de ejecucion. De esta
+manera se puede ejecutar el shell desde cualquier ubicacion y estaremos seguros
+de que este se ejecutara acorde a nuestros parametros.
 
-
-
-# vim: set ts=4 et sw=4 sts=4 si ai wrap tw=90 lbr syntax=txt:
+# vim: set ts=4 sw=4 sts=4 et si ai tw=80 lbr:
