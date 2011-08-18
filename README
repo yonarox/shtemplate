@@ -193,4 +193,4 @@ las mismas al no encontrarse dentro de los directorios de ejecucion. De esta
 manera se puede ejecutar el shell desde cualquier ubicacion y estaremos seguros
 de que este se ejecutara acorde a nuestros parametros.
 
-# vim: set ts=4 sw=4 sts=4 et si ai tw=80 lbr:
+# vim: set ts=4 sw=4 sts=4 et si ai tw=80 lbr syntax=markdown:

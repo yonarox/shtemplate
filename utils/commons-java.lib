@@ -56,25 +56,5 @@ javaClasspath ()
 
 }
 
-java16 () {
-  [ -d /opt/java-1.6.0-sun ] && export JAVA_HOME=/opt/java-1.6.0-sun
-  [ -d /opt/java/java1.6 ] && export JAVA_HOME=/opt/java/java1.6
-  [ -d /opt/java/java6 ] && export JAVA_HOME=/opt/java/java6
-  PATH=${JAVA_HOME}/bin:${PATH}
-  JAVA_VER=`java -version 2>&1 | grep "version" | sed -e "s/\"//g"`
-}
-
-java15 () {
-  [ -d /opt/java-1.5.0-sun ] && export JAVA_HOME=/opt/java-1.5.0-sun
-  [ -d /opt/java/java1.5 ] && export JAVA_HOME=/opt/java/java1.5
-  PATH=${JAVA_HOME}/bin:${PATH}
-  JAVA_VER=`java -version 2>&1 | grep "version" | sed -e "s/\"//g"`
-}
-
-java14 () {
-  [ -d /opt/java/java1.4 ] && export JAVA_HOME=/opt/java/java1.4
-  PATH=${JAVA_HOME}/bin:${PATH}
-  JAVA_VER=`java -version 2>&1 | grep "version" | sed -e "s/\"//g"`
-}
 
 #

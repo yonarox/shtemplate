@@ -1,50 +1,124 @@
-#!/bin/sh 
-# vim: set ts=2 sw=2 sts=2 si ai et: 
+#!/bin/sh
+# vim: set filetype=sh sw=2 sts=2 et si ai:
 
-# libutils.sh 
+# commons-sh.lib 
 # =
 #
 # Andres Aquino <aquino(at)hp.com>
 # Hewlett-Packard Company | EBS
-# 
+#
 
 #
-# constants
-# initialize app enviroment
-APSYSO="`uname -s`"
-APHOST=`hostname | sed -e "s/\..*//g"`
-APUSER=`id -u -n`
-APDATE=`date "+%Y%m%d"`
-APHOUR=`date "+%H%M"`
-APTIME="${APDATE}${APHOUR}"
-APLEVL="DEBUG"
+# user local enviroment
+_ULAND="`uname -s`"
+_UHOST=`hostname | sed -e "s/\..*//g"`
+_UDATE=`date "+%Y%m%d"`
+_UHOUR=`date "+%H%M"`
+_UTIME="${_UDATE}${_UHOUR}"
+_UUSER=`id -u -n`
+_UNAME="Andres Aquino"
+_UMAIL="aquino(at)hp.com"
+_UWORK="Hewlett-Packard Company | EBS"
+_UPATH="paths.d"
+_UCOLR=true
+_UDEBG=false
 
-# globals
-export APLOGS=
-export APLOGP=
-export APLOGT=
-export APPRCS=
-APFLTR=
 
-# Eye candy
-CLTYPE="\e"
-[ "${APSYSO}" = "HP-UX" ] && CLTYPE="\033"
+# Prints a message 
+print_to () {
+  local _message="${1}"
 
-#
-# get the enviroment for the SO running
-setEnvironment () {
-  # terminal line settings
-  stty 2> /dev/null > /dev/null 
+  _echo=`which echo`
+  case "${_ULAND}" in
+    "HP-UX")
+      ${_echo} "${_message}"
+      ;;
 
-  if [ "$?" = "0" ]
+    "Linux")
+      echo -e -n "${_message} \n"
+      ;;
+
+    "Darwin")
+      echo -e -n "${_message} \n"
+      ;;
+
+    *)
+      ${_echo} "${_message} "
+      ;;
+  esac
+
+}
+
+
+# logger
+log_to () {
+  local _message=${1}
+  local _ldate=`date "+%Y-%m-%d"`
+  local _ltime=`date "+%H:%M:%S"`
+
+  ${_UDEBG} && print_to "${_ldate} ${_ltime} : ${_message}" >> ~/commons-sh.log
+}
+
+# status
+status () {
+  local last_err=${1}
+  local last_msg=${2}
+  
+  [ -z "${last_msg}" ] && last_msg="${last_err}"
+  print_to " ${CRESET}${last_msg}${CRESET}"
+  [ "${last_err}" = "${last_msg}" ] && return
+  tput cuu1 && tput cuf $((`tput cols` - 8))
+  [ ${last_err} -eq 0 ] && 
+    print_to "${CRESET}[${TXTGRN} * ${CRESET}]" || 
+    print_to "${CRESET}[${TXTRED} ! ${CRESET}]"
+  tput sc
+
+}
+
+# set environment
+init_environment () {
+
+  # permissions by default over new files/directories
+  umask 0027
+
+  # Terminal 
+  export _UTERM="TERM"
+  export HOSTNAME=`hostname`
+  export LANG="C"
+
+  # Java Environment
+  export CLASSPATH=
+  export JAVA_HOME=
+  export SHLIB_PATH=
+
+  # get IP Address 
+  IFACE=
+  [ "${_ULAND}" = "HP-UX" ]  && IFACE=lan
+  [ "${_ULAND}" = "Linux" ]  && IFACE=eth
+  [ "${_ULAND}" = "Darwin" ] && IFACE=en
+
+  # .. from two network interfaces
+  for NDEV in 0 1 2
+  do
+    _IFACE="${IFACE}${NDEV}"
+    _IPADDR=`ifconfig ${_IFACE} 2> /dev/null| awk '/inet [addr:]*/ {print $2}' | sed -e "s/.*://g"`
+    [ -n "${_IPADDR}" ] && break
+  done
+
+  # setting locale  
+  CLTYPE="\033"
+  TABS="  "
+  [ "${_ULAND}" = "Linux" ] && CLTYPE="\e" 
+  [ "${_ULAND}" != "HP-UX" ] && LANG="en_US.UTF-8"
+
+  # loading a terminal or only a process
+  _UTERM="PROCESS"
+  stty 2> /dev/null | grep -q 'baud' 
+  [ $? -ne 0 ] && _UTERM="PROCESS"
+  ${_UCOLR} && _UTERM="CONSOLE" 
+  if [ ${_UTERM} = "CONSOLE" ]
   then
-    # terminal line settings
-    stty erase '^?'
-    stty intr '^C' 
-    stty kill '^U' 
-    stty stop '^S'
-    stty susp '^Z'
-    stty werase '^W'
+    # command line _eye candy_
 
     # command line _eye candy_
     CRESET="${CLTYPE}[0m"    # Text Reset
@@ -64,9 +138,26 @@ setEnvironment () {
     BLDPUR="${CLTYPE}[1;35m" # Purple
     BLDCYN="${CLTYPE}[1;36m" # Cyan
     BLDWHT="${CLTYPE}[1;37m" # White
- 
+    UNKBLK="${CLTYPE}[4;30m" # Black - Underline
+    UNDRED="${CLTYPE}[4;31m" # Red
+    UNDGRN="${CLTYPE}[4;32m" # Green
+    UNDYLW="${CLTYPE}[4;33m" # Yellow
+    UNDBLU="${CLTYPE}[4;34m" # Blue
+    UNDPUR="${CLTYPE}[4;35m" # Purple
+    UNDCYN="${CLTYPE}[4;36m" # Cyan
+    UNDWHT="${CLTYPE}[4;37m" # White
+    BAKBLK="${CLTYPE}[40m"   # Black - Background
+    BAKRED="${CLTYPE}[41m"   # Red
+    BAKGRN="${CLTYPE}[42m"   # Green
+    BAKYLW="${CLTYPE}[43m"   # Yellow
+    BAKBLU="${CLTYPE}[44m"   # Blue
+    BAKPUR="${CLTYPE}[45m"   # Purple
+    BAKCYN="${CLTYPE}[46m"   # Cyan
+    BAKWHT="${CLTYPE}[47m"   # White
+
   else
     # command line _eye candy_
+    _UTERM="TERM"
     CRESET="${CLTYPE}[0m"    # Text Reset
     TXTBLK="${CLTYPE}[0;30m" # Black - Regular
     TXTRED="" # Red
@@ -75,18 +166,115 @@ setEnvironment () {
     TXTBLU="" # Blue
     TXTPUR="" # Purple
     TXTCYN="" # Cyan
-    TXTWHT="${CLTYPE}[0;37m" # White
-    BLDBLK="${CLTYPE}[1;30m" # Black - Bold
-    BLDRED="" # Red
-    BLDGRN="" # Green
-    BLDYLW="" # Yellow
-    BLDBLU="" # Blue
-    BLDPUR="" # Purple
-    BLDCYN="" # Cyan
-    BLDWHT="${CLTYPE}[1;37m" # White
- 
+    TXTWHT="" # White
+
   fi
+
+	status $? "Loading environment"
   
+  # set to original path 
+  _opath=${PATH}
+}
+
+
+# Define a execution unix path reading each file in paths.d
+set_paths () {
+  local _local=
+
+  # if not exist or is empty, exit 
+  [ ! -d ${HOME}/${_UPATH} ] || [ -z "$(ls -A ${HOME}/${_UPATH})" ] && return 0
+
+  for pathfile in ${HOME}/${_UPATH}/*
+  do
+    # empty file
+    [ ! -s ${pathfile} ] && continue
+    
+    # include java path
+    grep -q java ${pathfile} && continue 
+
+    # for each file, get paths and add to execution path
+    for eachpath in $(cat ${pathfile})
+    do
+      # get one line (path) and verify: is this a directory? 
+      eachpath="$(eval echo ${eachpath} | sed -e 's/ *//g')"
+      [ ! -d ${eachpath} ] && break 
+
+      _local=${eachpath}:${_local}
+      log_to "Adding new path: ${eachpath}"
+    done
+  done
+
+  # User binaries  
+  [ -d ${HOME}/bin ] && _local=${HOME}/bin:${_local}
+
+  _local=.:${_local}
+  PATH=${_local}:${_opath}
+
+}
+
+
+# Set a java environment
+set_javaversion()
+{
+  local JAVA_ENV="${1}"
+
+  # if not exist or is empty, exit 
+  [ ! -d ${HOME}/${_UPATH} ] || [ -z "$(ls -A ${HOME}/${_UPATH})" ] && return 0
+
+  # rebuild path and validate
+  local JAVA_PROF="${HOME}/${_UPATH}/${JAVA_ENV}"
+  
+  # java path file? 
+  grep -q java "${JAVA_PROF}" || return 0
+
+  # reload paths to eliminate some java previous settings
+  localpaths
+
+  # Workaround
+  # for OS-X systems, java commands are in Commands/ 
+  _binpath="bin"
+  [ ${_ULAND} = "Darwin" ] && _binpath="Commands"
+
+  # rebuild path with java home
+  for eachpath in $(cat ${JAVA_PROF})
+  do
+    # expand vars
+    eachpath="$(eval echo ${eachpath})"
+    if [ -d ${eachpath}/${_binpath} ] 
+    then
+      PATH=${eachpath}/${_binpath}:${PATH}
+      log_to "Adding new path: ${eachpath}/${_binpath}"
+
+      JAVA_HOME=${eachpath}
+      JAVA_VERSION=`java -version 2>&1 | grep "version" | sed -e "s/\"//g;s/.*ion //g"`
+      log_to "Setting JAVA_HOME to ${eachpath}, Ver. ${JAVA_VERSION}"
+      
+      # workaround hp-ux & java16
+      [ ${_ULAND} = "HP-UX" ] && [ ${JAVA_ENV} = "java16" ] && SHLIB_PATH=${JAVA_HOME}/jre/lib/PA_RISC2.0/jli
+      return 0
+    fi
+  done
+
+}
+
+
+# load a new profile without errors (sending to dev/null)
+set_profile()
+{
+  local uprofile=${1}
+  if [ -s ${uprofile} ]
+  then
+    . ${uprofile} > /dev/null 2>&1
+    log_to "Load profile ${uprofile}"
+  fi
+
+}
+
+
+
+ 
+  
+mira () {
   # applications's name
   if [ ${#APNAME} -eq 0 ]
   then
