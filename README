@@ -1,5 +1,5 @@
 shTemplate
--------------
+----------
 An Small Shell Template for start/stop simple projects
 
 
@@ -146,39 +146,39 @@ APTYPE="[ foreground | background ]"
 
 # Description  : language required by the application
 # Required     : no, by default C
-APLANG="[default|Americas/Mexico]"
+APLANG="[ default | Americas/Mexico ]"
 
 # Description  : Initial Size of memory required by java process
 # Required     : no, by default set to 32m
-APMINI="[default|32m,64m,128m,...]"
+APMINI="[ default | 32m, 64m, 128m, ... ]"
 
 # Description  : Maximum Size of memory required by java process
 # Required     : no, by default set to 32m
-APMMAX="[default|32m,64m,128m,...]"
+APMMAX="[ default | 32m, 64m, 128m, ... ]"
 
 # Description  : Initial Permanent Size of memory required by java process
 # Required     : no, by default set to 16m
-APPINI="[default|32m,64m,128m,...]"
+APPINI="[ default | 32m, 64m, 128m, ... ]"
 
 # Description  : Maximum Permanent Size of memory required by java process
 # Required     : no, by default set to 16m
-APPMAX="[default|32m,64m,128m,...]"
+APPMAX="[ default | 32m, 64m, 128m, ... ]"
 
 # Description  : Flag, is required a Memory Heapdump of java process?
 # Required     : no
-APFHDB="[yes|no]"
+APFHDB="[ yes | no ]"
 
 # Description  : Flag, is required a Thread Heapdump of java process?
 # Required     : no
-APFTDB="[yes|no]"
+APFTDB="[ yes | no ]"
 
 # Description  : Security Policy, necessary to grant access on all java process
 # Required     : no
-APFSPL="[yes|no]"
+APFSPL="[ yes | no ]"
 
 # Description  : Java Classpath, build with all jar files founded in $APP/libs or require a strict load order
 # Required     : no
-APCLSS="[default|libs/uno.jar:libs/dos.jar:libs/tres.jar]"
+APCLSS="[ default | libs/uno.jar:libs/dos.jar:libs/tres.jar ]"
 
 # Description  : 
 # Required     :
