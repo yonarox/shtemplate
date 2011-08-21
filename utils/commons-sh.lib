@@ -22,28 +22,31 @@ _UWORK="Hewlett-Packard Company | EBS"
 _UPATH="paths.d"
 _UCOLR=true
 _UDEBG=false
+_UECHO=`which echo`
+
+# applications environment
+_PFLOG=~/commons-sh.log
 
 
 # Prints a message 
 print_to () {
-  local _message="${1}"
-
-  _echo=`which echo`
+  local message="${1}"
+  
   case "${_ULAND}" in
     "HP-UX")
-      ${_echo} "${_message}"
+      ${_UECHO} "${message}"
       ;;
 
     "Linux")
-      echo -e -n "${_message} \n"
+      echo -e -n "${message} \n"
       ;;
 
     "Darwin")
-      echo -e -n "${_message} \n"
+      echo -e -n "${message} \n"
       ;;
 
     *)
-      ${_echo} "${_message} "
+      ${_UECHO} "${message} "
       ;;
   esac
 
@@ -52,11 +55,11 @@ print_to () {
 
 # logger
 log_to () {
-  local _message=${1}
-  local _ldate=`date "+%Y-%m-%d"`
-  local _ltime=`date "+%H:%M:%S"`
+  local message=${1}
+  local ldate=`date "+%Y-%m-%d"`
+  local ltime=`date "+%H:%M:%S"`
 
-  ${_UDEBG} && print_to "${_ldate} ${_ltime} : ${_message}" >> ~/commons-sh.log
+  ${_UDEBG} && print_to "${ldate} ${ltime} : ${message}" >> ${_PFLOG}
 }
 
 # status
@@ -92,18 +95,21 @@ init_environment () {
   export SHLIB_PATH=
 
   # get IP Address 
-  IFACE=
-  [ "${_ULAND}" = "HP-UX" ]  && IFACE=lan
-  [ "${_ULAND}" = "Linux" ]  && IFACE=eth
-  [ "${_ULAND}" = "Darwin" ] && IFACE=en
+  _IFACE=
+  [ "${_ULAND}" = "HP-UX" ]  && _IFACE=lan
+  [ "${_ULAND}" = "Linux" ]  && _IFACE=eth
+  [ "${_ULAND}" = "Darwin" ] && _IFACE=en
 
   # .. from two network interfaces
-  for NDEV in 0 1 2
+  for _NDEV in 0 1 2
   do
-    _IFACE="${IFACE}${NDEV}"
-    _IPADDR=`ifconfig ${_IFACE} 2> /dev/null| awk '/inet [addr:]*/ {print $2}' | sed -e "s/.*://g"`
+    _NFACE="${_IFACE}${_NDEV}"
+    _IPADDR=`ifconfig ${_NFACE} 2> /dev/null| awk '/inet [addr:]*/ {print $2}' | sed -e "s/.*://g"`
     [ -n "${_IPADDR}" ] && break
   done
+
+  # using ..
+  log_to "[${_IPADDR} ${HOSTNAME}] is running ${_ULAND}, (`uname -r`)"
 
   # setting locale  
   CLTYPE="\033"
@@ -118,8 +124,6 @@ init_environment () {
   ${_UCOLR} && _UTERM="CONSOLE" 
   if [ ${_UTERM} = "CONSOLE" ]
   then
-    # command line _eye candy_
-
     # command line _eye candy_
     CRESET="${CLTYPE}[0m"    # Text Reset
     TXTBLK="${CLTYPE}[0;30m" # Black - Regular
@@ -169,17 +173,18 @@ init_environment () {
     TXTWHT="" # White
 
   fi
-
-	status $? "Loading environment"
   
-  # set to original path 
+  log_to "Environment under ${_UTERM}"
+  
+  # set applications path 
   _opath=${PATH}
+
 }
 
 
 # Define a execution unix path reading each file in paths.d
 set_paths () {
-  local _local=
+  local localpath=
 
   # if not exist or is empty, exit 
   [ ! -d ${HOME}/${_UPATH} ] || [ -z "$(ls -A ${HOME}/${_UPATH})" ] && return 0
@@ -199,16 +204,16 @@ set_paths () {
       eachpath="$(eval echo ${eachpath} | sed -e 's/ *//g')"
       [ ! -d ${eachpath} ] && break 
 
-      _local=${eachpath}:${_local}
-      log_to "Adding new path: ${eachpath}"
+      localpath=${eachpath}:${localpath}
+      log_to "Adding path: ${eachpath}"
     done
   done
 
   # User binaries  
-  [ -d ${HOME}/bin ] && _local=${HOME}/bin:${_local}
+  [ -d ${HOME}/bin ] && localpath=${HOME}/bin:${localpath}
 
-  _local=.:${_local}
-  PATH=${_local}:${_opath}
+  local=.:${localpath}
+  PATH=${localpath}:${_opath}
 
 }
 
@@ -216,13 +221,14 @@ set_paths () {
 # Set a java environment
 set_javaversion()
 {
-  local JAVA_ENV="${1}"
+  local java_version="${1}"
+  local bin_path=
 
   # if not exist or is empty, exit 
   [ ! -d ${HOME}/${_UPATH} ] || [ -z "$(ls -A ${HOME}/${_UPATH})" ] && return 0
 
   # rebuild path and validate
-  local JAVA_PROF="${HOME}/${_UPATH}/${JAVA_ENV}"
+  local JAVA_PROF="${HOME}/${_UPATH}/${java_version}"
   
   # java path file? 
   grep -q java "${JAVA_PROF}" || return 0
@@ -232,18 +238,18 @@ set_javaversion()
 
   # Workaround
   # for OS-X systems, java commands are in Commands/ 
-  _binpath="bin"
-  [ ${_ULAND} = "Darwin" ] && _binpath="Commands"
+  bin_path="bin"
+  [ ${_ULAND} = "Darwin" ] && bin_path="Commands"
 
   # rebuild path with java home
   for eachpath in $(cat ${JAVA_PROF})
   do
     # expand vars
     eachpath="$(eval echo ${eachpath})"
-    if [ -d ${eachpath}/${_binpath} ] 
+    if [ -d ${eachpath}/${bin_path} ] 
     then
-      PATH=${eachpath}/${_binpath}:${PATH}
-      log_to "Adding new path: ${eachpath}/${_binpath}"
+      PATH=${eachpath}/${bin_path}:${PATH}
+      log_to "Adding path: ${eachpath}/${bin_path}"
 
       JAVA_HOME=${eachpath}
       JAVA_VERSION=`java -version 2>&1 | grep "version" | sed -e "s/\"//g;s/.*ion //g"`
@@ -267,464 +273,6 @@ set_profile()
     . ${uprofile} > /dev/null 2>&1
     log_to "Load profile ${uprofile}"
   fi
-
-}
-
-
-
- 
-  
-mira () {
-  # applications's name
-  if [ ${#APNAME} -eq 0 ]
-  then
-    APNAME="`basename ${0}`"
-    APNAME="${APNAME%.*}"
-  fi
-
-  # application's path
-  if [ ${#APPATH} -eq 0 ]
-  then
-    APPATH=${APHOME}/${APNAME}
-  fi
-  [ ! -d ${APPATH} ] && mkdir -p ${APPATH}
-  [ -s ${APPATH}/PROFILE ] && APPROF="`cat ${APPATH}/PROFILE`" || APPROF="(c) Andres Aquino <andres.aquino(at)gmail.com>"
-  
-  # config 
-  [ -d ${APPATH}/conf ] && APCONF=${APPATH}/conf || APCONF=${APPATH}
-
-  # log's path
-  if [ ${#APLOGD} -eq 0 ]
-  then
-    APLOGD=${APPATH}/logs
-  fi
-  APLOGS=${APLOGD}/${APNAME}
-  APTEMP=${APLOGD}/temp
-  APLOGP=${APTEMP}/${APNAME}
-  [ ! -d ${APLOGD} ] && mkdir -p ${APLOGD}
-  [ ! -d ${APTEMP} ] && mkdir -p ${APTEMP}
-
-  # key file to cipher/decipher information
-  APKEYF="${APCONF}/${APNAME}.key"
-  
-  HOSTNAME=`hostname`
-  case "${APSYSO}" in
-    "HP-UX")
-      PSOPTS="-l -f -a -x -e"
-      PSPOS=1
-      DFOPTS="-P -k"
-      MKOPTS="-d /tmp -p "
-      APUSER=`id -u -n`
-      ECOPTS=""
-      PING="`which ping`"
-      PINGPARAMS="-n"
-      IFCONFIG="`which ifconfig`"
-      IFPARAMS="lan"
-      MAIL=`which mailx`
-      TAR=`which tar`
-      ZIP=`which gzip`
-      SCREEN=`which screen`
-      IPADDRESS=`${PING} ${HOSTNAME} -n 1 | awk '/icmp_=/{print $0}' | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\.[0-9]*\.[0-9]*\).*$/\1/'`
-    ;;
-      
-    "Linux")
-      PSOPTS="lax"
-      PSPOS=0
-      DFOPTS="-Pk"
-      MKOPTS="-t "
-      APUSER=`id -u `
-      ECOPTS=""
-      PING="`which ping`"
-      PINGPARAMS="-c"
-      IFCONFIG="`which ifconfig`"
-      IFPARAMS="eth"
-      MAIL=`which mail`
-      TAR=`which tar`
-      ZIP=`which gzip`
-      SCREEN=`which screen`
-      IPADDRESS=`${PING} -c 1 ${HOSTNAME} | awk '/icmp_seq=/{print $0}' | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\.[0-9]*\.[0-9]*\).*$/\1/'`
-    ;;
-    
-    "Darwin")
-      PSOPTS="-leax"
-      PSPOS=-1
-      DFOPTS="-P -k"
-      MKOPTS="-t "
-      APUSER=`id -u `
-      ECOPTS=""
-      PING="`which ping`"
-      PINGPARAMS="-c"
-      IFCONFIG="`which ifconfig`"
-      IFPARAMS="en"
-      MAIL=`which mail`
-      TAR=`which tar`
-      ZIP=`which gzip`
-      SCREEN=`which screen`
-      IPADDRESS=`${PING} -c 1 ${HOSTNAME} | awk '/icmp_seq=/{print $0}' | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\.[0-9]*\.[0-9]*\).*$/\1/'`
-    ;;
-      
-    *)
-      PSOPTS="-l"
-      PSPOS=0
-      IPADDRESS="127.0.0.1"
-    ;;
-  esac
-
-  # print a report
-  logAction "DEBUG" "${APNAME} starting, you're using ${APSYSO} Operating System"
-}
-
-
-#
-# set Application's Name
-setName () {
-  local AP_NAME=${1}
-  local AP_PATH=${2}
-
-  APNAME=${AP_NAME}
-  APPATH=${AP_PATH}
-  [ ! -d ${APPATH} ] && mkdir -p ${APPATH}
-  
-  #APLOGD=${APHOME}/logs
-  APLOGS=${APLOGD}/${APNAME}
-  [ ! -d ${APLOGD} ] && mkdir -p ${APLOGD}
-
-  APTEMP=${APLOGD}/temp
-  [ ! -d ${APTEMP} ] && mkdir -p ${APTEMP}
-
-  APLOGP=${APTEMP}/${APPRCS}
-  
-}
-
-
-#
-# set log
-setLogs () {
-  local AP_LOGD=${1}
-
-  # log's path
-  [ -d ${APLOGD} ] && echo "del ${APLOGD}"
-  APLOGD=${AP_LOGD}
-  APLOGS=${APLOGD}/${APNAME}
-  [ ! -d ${APLOGD} ] && mkdir -p ${APLOGD}
-
-  [ -d ${APTEMP} ] && echo "del ${APTEMP}"
-  APTEMP=${APLOGD}/temp
-  [ ! -d ${APTEMP} ] && mkdir -p ${APTEMP}
-
-}
-
-
-#
-# set processes
-setProcess () {
-  local AP_PROC=${1}
-
-  # process name
-  export APPRCS=${AP_PROC}
-  export APLOGP=${APLOGD}/${APPRCS}
-  export APLOGT=${APTEMP}/${APPRCS}
-
-}
-
-#
-# get the process ID of an app
-#  FILTER = strings to look for in process list (ej. java | rmi;java | iplanet,cci)
-#  PROCID = IDname for process (ej. iplanets)
-getProcessID () {
-  #
-  local FILTER="${1}"
-  
-  [ ${#FILTER} -ne 0 ] && APFLTR=${FILTER}
-  PIDFILE=${APLOGT}
-  WRDSLIST=`echo  "${APUSER},${APFLTR}" | sed -e "s/\///g;s/,/\/\&\&\//g;s/;/\/\|\|\//g"` 
-  # extraer procesos existentes y filtrar las cadenas del archivo de configuracion
-  ps ${PSOPTS} > ${PIDFILE}.allps
-  logAction "DEBUG" "filtering process list with [ps ${PSOPTS}]"
-  ${VIEWMLOG} && showStatus "i" "Creating of ${PIDFILE}.allps"
-  
-  # extraer los procesos que nos interesan 
-  awk "/${WRDSLIST}/{print}" ${PIDFILE}.allps > ${PIDFILE}.ps
-  logAction "DEBUG" "looking for /${WRDSLIST}/ in ${PIDFILE}.allps owned by ${APUSER}"
-  
-  # el archivo existe y es mayor a 0 bytes 
-  if [ -s ${PIDFILE}.ps ]
-  then
-    ${VIEWMLOG} && showStatus "i" "${PIDFILE}.allps < /${WRDSLIST}/ = uju!"
-    # extraer los procesos y reordenarlos
-    sort -n -k8 ${PIDFILE}.ps > ${PIDFILE}.pss
-    logAction "DEBUG" "hey, we have one ${APPRCS} process alive in ${PIDFILE}.ps "
-    
-    # extraer los pid de los procesos implicados 
-    awk -v P=${PSPOS} '{print $(3+P)}' ${PIDFILE}.pss > ${PIDFILE}.pid
-    
-    # reodernar los PPID para dejar el proceso raiz al final
-    awk -v P=${PSPOS} '{print $(4+P)}' ${PIDFILE}.pss | sort -rn | uniq > ${PIDFILE}.ppid
-
-  else
-    ${VIEWMLOG} && showStatus "i" "${PIDFILE}.allps < /${WRDSLIST}/ = dawm!"
-    # eliminar archivos ppid, en caso de que el proceso ya no exista
-    logAction "DEBUG" "hey, ${APPRCS} is not running in ${PIDFILE}.ps "
-    rm -f ${PIDFILE}.{pid,ppid}
-  fi
-  rm -f ${PIDFILE}.{pss}
-}
-
-#
-# verify the PID's for a specific process
-isProcessRunning () {
-  local COUNT=0
-  local EACH=""
-
-  # toma de base el APPRCS que se encuentra instanciada 
-  PIDFILE=${APLOGT}
-  logAction "DEBUG" "looking for ${PIDFILE}.pid"
-
-  # si no existe el PID, forzar la busqueda 
-  [ ! -s ${PIDFILE}.pid ] && getProcessID
-
-  # caso contrario, verificar que sea correcto 
-  if [ -s ${PIDFILE}.pid ]
-  then
-    PROCESS=`head -n1 ${PIDFILE}.pid`
-    ${VIEWMLOG} && showStatus "i" "${PIDFILE}.pid > [ ${PROCESS} ]"
-    kill -0 ${PROCESS} > /dev/null 2>&1
-    RESULT=$?
-    [ ${RESULT} -ne 0 ] && STATUS="process ${APPRCS} is not running"
-    [ ${RESULT} -eq 0 ] && STATUS="process ${APPRCS} is running"
-    ${VIEWMLOG} && showStatus "i" "Well, ${STATUS} (kill -0 PID)"
-    logAction "DEBUG" "${STATUS}"
-    return ${RESULT}
-  else
-    rm -f ${PIDFILE}.*
-    return 1
-  fi
-}
-
-
-
-#
-# verify the PID's for a specific process
-searchProcess () {
-  local COUNT=0
-  local EACH=""
-
-  for PIDFILE in ${APTEMP}/*.pid
-  do
-    # si no existe el archivo de .pid, reportarlo y terminar
-    if [ -s ${PIDFILE} ]
-    then
-      PROCESS=`head -n1 ${PIDFILE}`
-      kill -0 ${PROCESS} > /dev/null 2>&1
-      RESULT=$?
-      [ ${RESULT} -ne 0 ] && logAction "DEBUG" "${PIDFILE} is not a valid process"
-      [ ${RESULT} -ne 0 ] && rm -f ${PIDFILE}
-      return ${RESULT}
-    fi
-  done
-}
-
-
-#
-# event log
-logAction () {
-  local LEVEL="${1}"
-  local ACTION="${2}"
-  
-  # filelog y process id
-  local TIME="`date '+%H:%M:%S'`"
-  local DATE="`date '+%Y-%m-%d'`"
-  local PID="$$"
-  # verificar que existe (mayor a 0 bytes) y ademas se cuenta con el process id
-  if [ -s ${APLOGS}.pid ] 
-  then 
-    PID=`head -n1 ${APLOGP}.pid`
-  fi
-    
-  # TODO
-  # severity level: http://www.aboutdebian.com/syslog.htm
-  # do you need make something for whatever level on your app ? 
-  LOGTHIS=false
-  case "${LEVEL}" in
-    "ALERT")
-      LOGTHIS=true
-    ;;
-    "EMERG"|"CRIT"|"ERR")
-      LOGTHIS=true
-      showStatus "?" "${ACTION}"
-    ;;
-    "WARN")
-      [ ${APLEVL} = "WARN" ] && LOGTHIS=true
-    ;;
-    "NOTICE")
-      [ ${APLEVL} = "NOTICE" ] || [ ${APLEVL} = "DEBUG" ] && LOGTHIS=true
-      showStatus "i" "${ACTION}"
-    ;;
-    "DEBUG")
-      [ ${APLEVL} = "DEBUG" ] && LOGTHIS=true
-    ;;
-    "INFO")
-      [ ${APLEVL} = "INFO" ] || [ ${APLEVL} = "DEBUG" ] && LOGTHIS=true
-      showStatus "*" "${ACTION}"
-    ;;
-  esac 
-  
-  if ${LOGTHIS}
-  then
-    if [ ${#APLOGS} -eq 0 ]
-    then
-      echo "${DATE} ${TIME} ${APHOST} ${PRNAME}[${PID}]: (${LEVEL}) ${ACTION}" 
-    else
-      echo "${DATE} ${TIME} ${APHOST} ${PRNAME}[${PID}]: (${LEVEL}) ${ACTION}" >> ${APLOGS}.log
-    fi
-  fi
-}
-
-
-#
-# show status of app execution
-showStatus () {
-  local STATUS="${1}"
-  local MESSAGE="${2}"
-  
-  # cadena para indicar proceso correcto o con error
-  echo " ${MESSAGE} " | awk -v STATUS=${STATUS} '{print substr($0"                                                                                        ",1,80),STATUS}'
-  if [ "${#TXTBLU}" -ne 0 ] 
-  then 
-    tput sc 
-    tput cuu1 && tput cuf 80
-    case "${STATUS}" in
-      "*")
-        toPrint "${CRESET}[${TXTGRN} ${STATUS} ${CRESET}]"
-      ;;
-      "?")
-        toPrint "${CRESET}[${TXTRED} ${STATUS} ${CRESET}]"
-      ;;
-      "i")
-        toPrint "${CRESET}[${TXTYLW} ${STATUS} ${CRESET}]"
-      ;;
-    esac
-  fi
-}
-
-
-#
-# toSearch
-toSearch () {
-  local FILTER="${1}"
-  local WRDSLIST=`echo "${FILTER}" | sed -e "s/\///g;s/,/\/\&\&\//g;s/;/\/\|\|\//g"` 
-
-  # la long de la cad no esta vacia
-  [ ${#FILTER} -eq 0 ] && logAction "DEBUG" "Umh, please set the filter (UP or DOWN)String"
-  [ ${#FILTER} -eq 0 ] && return 1
-
-  # extraer los procesos que nos interesan 
-  [ ! -f ${APLOGP}.log ] && touch ${APLOGP}.log
-  cut -c1-160 ${APLOGP}.log | awk "BEGIN{res=0}/${WRDSLIST}/{res=1}END{if(res==0){exit 1}}"
-  LASTSTATUS=$?
-  logAction "DEBUG" "ok, searching /${WRDSLIST}/ in ${APLOGP}.log: ${LASTSTATUS}"
-  
-  if [ ${LASTSTATUS} -eq 0 ]
-  then
-    logAction "DEBUG" "search of /${FILTER}/ was succesfull"
-  else
-    logAction "DEBUG" "search of /${FILTER}/ was failed"
-  fi
-
-  return ${LASTSTATUS}
-}
-
-
-toPrint () {
-  local message="$1"
-
-  _echo=`which echo`
-  case "${APSYSO}" in
-    "HP-UX")
-      $_echo "$message"
-    ;;
-      
-    "Linux")
-      $_echo -e -n "$message \n"
-    ;;
-    
-    "Darwin")
-      $_echo -e -n "$message \n"
-    ;;
-      
-    *)
-      $_echo "$message *"
-    ;;
-  esac
-
-}
-
-#
-# waiting process indicator
-statusWaiting () {
-  local WAITSTR="- \ | / "
-  local STATUS=${1}
-  local TIMETO=${2}
-  local GOON=true
-  local WAITCHAR="-"
-  
-  [ ${#TIMETO} -eq 0 ] && TIMETO=1
-
-  if [ "${#TXTBLU}" -ne 0 ] 
-  then
-    if [ "${STATUS}" != "CLEAR" ]
-    then
-      TIMETO=$((${TIMETO}*5))
-      toPrint " >>${STATUS} " | awk '{print substr($0"                                                                                        ",1,80)}'
-      tput sc
-      CHARPOS=1
-      while(${GOON})
-      do
-        WAITCHAR=`echo ${WAITSTR} | cut -d" " -f${CHARPOS}`
-        # recuperar la posicion en pantalla, ubicar en la columna 70 y subirse un renglon 
-        tput rc
-        tput cuu1 && tput cuf 80 
-        toPrint "${CRESET}[${TXTYLW} ${WAITCHAR} ${CRESET}]"
-        # incrementar posicion, si es igual a 5 regresar al primer caracter 
-        CHARPOS=$((${CHARPOS}+1))
-        [ ${CHARPOS} -eq 5 ] && CHARPOS=1
-        perl -e 'select(undef,undef,undef,.1)'
-        TIMETO=$((${TIMETO}-1))
-        [ ${TIMETO} -eq 0 ] && GOON=false
-      done
-    else
-      # limpiar linea de mensajes
-      tput rc 
-      tput cuu1
-      tput el
-    fi
-    # limpiar linea de mensajes
-    tput rc 
-    tput cuu1
-    #tput el
-  else
-    echo " >>${STATUS} " | awk '{print substr($0"                                                                                        ",1,80)}'
-    while(${GOON})
-    do
-      sleep 1
-      TIMETO=$((${TIMETO}-1))
-      [ ${TIMETO} -lt 0 ] && GOON=false
-    done
-  fi
-}
-
-# use openssl for encrypt/decrypt information
-getUser () {
-  info=`openssl enc -d -aes256 -salt -pass file:${APKEYF} -in ${APCONF}/${1}`
-  logAction "DEBUG" "Getting password from "
-  echo ${info%@*}
-
-}
-
-getPassword () {
-  info=`openssl enc -d -aes256 -salt -pass file:${APKEYF} -in ${APCONF}/${1}`
-  logAction "DEBUG" "Getting password from "
-  echo ${info#*@}
 
 }
 

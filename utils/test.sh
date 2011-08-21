@@ -9,14 +9,14 @@
 # 
 
 . ~/Dropbox/hp.com/shtemplate.git/utils/commons-sh.lib
+#. ~/Dropbox/hp.com/shtemplate.git/utils/commons-j.lib
 
 _UDEBG=true
 _UCOLR=true
 
-echo $-
 init_environment
-set_profile ~/host.info
 set_paths
+set_profile ~/host.info
 status "Loading new profiles "
 status 0 "Loading new profiles "
 status -1 "Loading new profiles "

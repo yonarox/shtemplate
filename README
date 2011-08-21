@@ -3,12 +3,12 @@ shTemplate
 An Small Shell Template for start/stop simple projects
 
 
-### Developed by
+## Developed by
 
 Andres Aquino <aquino(at)hp.com>
 
 
-### Source Code
+## Source Code
 
 [GitHub]       http://andresaquino.github.com/shtemplate
 
@@ -17,7 +17,7 @@ Andres Aquino <aquino(at)hp.com>
 [Bugtracker]   http://github.com/andresaquino/shtemplate/issues
 
 
-### Overview
+## Overview
 
 Crear una plantilla para desarrollar aplicaciones que se ejecutan en shell, la
 necesidad  necesidad viene de homologar la manera en como se desarrollan este
@@ -33,7 +33,7 @@ meanwhile help transitions of development to production environments.
 Do you want help us, send us your commits <aquino@hp.com>
 
 
-### Structure
+## Structure
 
     Directorio base
         .
@@ -89,7 +89,7 @@ Do you want help us, send us your commits <aquino@hp.com>
         └── README
 
 
-### Workflow
+## Workflow
 
 Use a configuration file where 
 
@@ -121,7 +121,7 @@ Examples
       ...
 
 
-### Configuration files 
+## Configuration files 
 
 shtemplate.conf
 

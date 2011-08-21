@@ -1,23 +1,46 @@
 #!/bin/sh 
 # vim: set ts=2 sw=2 sts=2 et si ai syntax=sh: 
 
-# javaEnvironment.sh
+# commons-j.sh
 # =
 #
 # Andres Aquino <aquino(at)hp.com>
 # Hewlett-Packard Company | EBS
 # 
 
-export CLASSPATH=
-export JAVA_HOME=
+java_environment () {
+  # Version
+  _JVERS="java15"
 
-javaEnvironment ()
-{
   # Language
-  LANG="es_MX.iso88591"
+  _JLANG="C"
+
+  # TimeZone
+  _JTIMZ="America/Mexico_City"
+
+  # Memory (Initial Size)
+  _JMISZ=
+
+  # Memory (Maximum Size)
+  _JMMSZ=
+
+  # Memory (Initial Permanent Size)
+  _JMIPZ=
+
+  # Memory (Maximum Permanent Size)
+  _JMMPZ=
+
+  # Memory (HeapDump of memory)
+  _JMDMP=
+
+  # Thread (HeapDump of processes)
+  _JTDMP=
+
+  # Policy of Security
+  _JPSEC=
 
   # java flags environment
-  JAVA_FLAGS=
+  _JFLGS=
 
   # Initial and Maximum size of the Java Heap
   [ -z "${APMINI}" -o "${APMINI}" == "default" ] && APMINI="32m"
