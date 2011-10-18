@@ -1,7 +1,7 @@
 #!/bin/sh
 # vim: set filetype=sh sw=2 sts=2 et si ai:
 
-# commons-sh.lib 
+# tCommons.lib 
 # =
 #
 # Andres Aquino <aquino(at)hp.com>
@@ -25,7 +25,7 @@ _UDEBG=false
 _UECHO=`which echo`
 
 # applications environment
-_PFLOG=~/commons-sh.log
+_PFLOG=~/tCommons.log
 
 
 # Prints a message 
@@ -70,10 +70,10 @@ status () {
   [ -z "${last_msg}" ] && last_msg="${last_err}"
   print_to " ${CRESET}${last_msg}${CRESET}"
   [ "${last_err}" = "${last_msg}" ] && return
-  tput cuu1 && tput cuf $((`tput cols` - 8))
+  tput cuu1 && tput cuf $((`tput cols` - 12))
   [ ${last_err} -eq 0 ] && 
-    print_to "${CRESET}[${TXTGRN} * ${CRESET}]" || 
-    print_to "${CRESET}[${TXTRED} ! ${CRESET}]"
+    print_to "${CRESET}...[${TXTGRN} * ${CRESET}]" || 
+    print_to "${CRESET}...[${TXTRED} ! ${CRESET}]"
   tput sc
 
 }
