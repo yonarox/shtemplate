@@ -8,10 +8,9 @@
 # Hewlett Packard Company | EBS
 # 
 
-. ~/Dropbox/hp.com/shtemplate.git/utils/commons-sh.lib
-#. ~/Dropbox/hp.com/shtemplate.git/utils/commons-j.lib
+. ~/Dropbox/hp.com/shtemplate.git/utils/tCommons.lib
 
-_UDEBG=true
+_UDEBG=false
 _UCOLR=true
 
 init_environment
