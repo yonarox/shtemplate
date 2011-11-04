@@ -1,68 +1,136 @@
 #!/bin/sh 
 # vim: set filetype=sh ts=2 sw=2 sts=2 et si ai: 
 
-# commons-j.lib
+# jCommons.lib
 # =
 #
 # Andres Aquino <aquino(at)hp.com>
 # Hewlett-Packard Company | EBS
 # 
 
-jSetEnvironment () {
-  # Version
-  _JVERS="java15"
+# set Environment
+jSetEnvironment () 
+{
+  if [ -n ${APHOME} ]
+  then
+    . ${APHOME}/java.env
+  else
+    echo "Please, set APHOME"
+  fi
 
-  # Language
-  _JLANG="C"
+}
 
-  # TimeZone
-  _JTIMZ="America/Mexico_City"
+# Heap Size of Memory
+# This setting controls the size of the Java heap.
+# Properly tuning this parameter reduces the overhead of garbage collection, 
+# improving server response time and throughput. 
+jSetSizeofMemory ()
+{
+  # Initial Size and Maximum
+  local INITIAL=${1}
+  local MAXIMUM=${2}
+  
+  # undeclared, then default values 
+  [ ! -n ${INITIAL} ] && INITIAL=${JMINITIAL}
+  [ ! -n ${MAXIMUM} ] && MAXIMUM=${JMMAXIMUM}
 
-  # Memory (Initial Size)
-  _JMISZ=
+  # ... and setting
+  JAVA_FLAGS="${JAVA_FLAGS} -Xms${INITIAL} -Xmx${MAXIMUM} "
 
-  # Memory (Maximum Size)
-  _JMMSZ=
+}
 
-  # Memory (Initial Permanent Size)
-  _JMIPZ=
+# Permanent Generation Size of Memory on Hold
+jSetPermSizeofMemory ()
+{
+  # Initial Size and Maximum
+  local INITIAL=${1}
+  local MAXIMUM=${2}
+  
+  # undeclared, then default values 
+  [ ! -n ${INITIAL} ] && INITIAL=${JPINITIAL}
+  [ ! -n ${MAXIMUM} ] && MAXIMUM=${JPMAXIMUM}
 
-  # Memory (Maximum Permanent Size)
-  _JMMPZ=
+  # ... and setting
+  JAVA_FLAGS="${JAVA_FLAGS} -XX:PermSize=${INITIAL} -X:MaxPermSize=${MAXIMUM} "
 
-  # Memory (HeapDump of memory)
-  _JMDMP=
+}
 
-  # Thread (HeapDump of processes)
-  _JTDMP=
+# Heap Dump of Memory
+jSetHeapDump ()
+{
+  # set where heapdump exists
+  local HEAPLOG="${APHOME}/logs/${APTIME}.hprof"
+  
+  # ... and setting
+  JAVA_FLAGS="${JAVA_FLAGS} -XX:+HeapDumpOnCtrlBreak "
+  JAVA_FLAGS="${JAVA_FLAGS} -XX:HeapDumpPath=${HEAPLOG} "
 
-  # Policy of Security
-  _JPSEC=
+}
 
-  # java flags environment
-  _JFLGS=
+# Garbage Collector behaviour
+jSetGarbageCollector ()
+{
+  # set where heapdump exists
+  local GARBAGELOG="${APHOME}/logs/${APTIME}.gc"
+  
+  # ... and setting
+  JAVA_FLAGS="${JAVA_FLAGS} -XX:+DisableExplicitGC "
+  JAVA_FLAGS="${JAVA_FLAGS} -XX:file=${GARBAGELOG} "
 
-  # Initial and Maximum size of the Java Heap
-  [ -z "${APMINI}" -o "${APMINI}" == "default" ] && APMINI="32m"
-  JAVA_FLAGS="${JAVA_FLAGS} -Xms${APMINI}"
+}
 
-  [ -z "${APMMAX}" -o "${APMMAX}" == "default" ] && APMMAX="32m"
-  JAVA_FLAGS="${JAVA_FLAGS} -Xmx${APMMAX}"
+# Timezone
+# Set the timezone for a single instance of a JVM process.
+jSetTimeZone ()
+{
+  # local time zone 
+  local TIMEZONE=${1}
 
-  # Size of the heap reserved for the permanent generation hold
-  JAVA_FLAGS="${JAVA_FLAGS} -XX:PermSize=64m"
-  JAVA_FLAGS="${JAVA_FLAGS} -XX:MaxPermSize=128m"
+  # undeclared, use default value
+  [ ! -n ${TIMEZONE} ] && TIMEZONE=${JTIMEZONE}
 
-  # HeapDump
-  JAVA_FLAGS="${JAVA_FLAGS} -XX:+HeapDumpOnCtrlBreak"
-  JAVA_FLAGS="${JAVA_FLAGS} -XX:HeapDumpPath=${APPATH}/logs/${APNAME}-${APTIME}.hprof"
+  # ... and setting
+  JAVA_FLAGS="${JAVA_FLAGS} -Duser.timezone=${TIMEZONE} "
 
-  # Garbage Collector
-  JAVA_FLAGS="${JAVA_FLAGS} -XX:+DisableExplicitGC"
-  JAVA_FLAGS="${JAVA_FLAGS} -XX:file=${APHOME}/logs/${APNAME}-${APTIME}.gc"
+}
 
-  # Java Security Policy
-  JAVA_FLAGS="${JAVA_FLAGS} -Djava.security.policy=${APHOME}/java.policy"
+# Security Policy of a JVM execution
+# The policy for a Java application environment (specifying which 
+# permissions are available for code from various sources) is 
+# represented by a Policy object.
+jSetSecurityPolicy ()
+{
+  #
+  local POLICY=${1}
+
+  # build policy path in this manner, Path = $APHOME + $POLICY 
+  POLICY="${APHOME}/${POLICY}"
+
+  # validate or use default value
+  [ ! -e ${POLICY} ] && POLICY=${JSEPOLICY}
+
+  # ... and setting
+  JAVA_FLAGS="${JAVA_FLAGS} -Djava.security.policy=${POLICY}"
+
+}
+
+
+jSetRMIProcess ()
+{
+  _JRMIBASE=${1}
+  _JRMIPORT=${2}
+  export JAVA_RMI=
+
+  # define flag
+  _JRMIBASE=${APHOME}/lib/${_JRMIBASE}
+  if [ ! -f ${_JRMIBASE} ]
+  then
+    printto "Any RMI CodeBase file exists, verify ${_JRMIBASE}"
+    _JRMIPORT=0
+    return 1
+  else
+    JAVA_RMI="file://${_JRMIBASE}"
+  fi
 
 }
 
@@ -70,10 +138,13 @@ jBuildClasspath ()
 {
   # Java Classes
   JAVA_CLASSPATH="."
-  for classfile in "${APHOME}/libs/*.jar"
+  for classfile in "${APHOME}/lib/*.jar"
   do
     JAVA_CLASSPATH="${classfile}:${JAVA_CLASSPATH}"
   done
+  
+  # if receive an additional directory
+  [ -d ${APHOME}/${1} ] && JAVA_CLASSPATH="${APHOME}/${1}:${JAVA_CLASSPATH}"
 
   export CLASSPATH="${JAVA_CLASSPATH}:."
 
