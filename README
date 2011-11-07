@@ -37,35 +37,41 @@ Do you want help us, send us your commits <aquino@hp.com>
 
     Directorio base
         .
-        ├── shelltemplate                   # Instalacion
-        ├── backups                         # Directorio de Backups
-        │   └── *.bkp
-        ├── bin                             # shells de aplicacion
-        │   ├── shtemplate.sh
-        │   ├── decrypt.sh
-        │   ├── encrypt.sh
-        │   └── shtemplate.
-        ├── conf                            # configuracion (log4j,rc)
-        │   ├── log4j.properties
-        │   ├── shtemplate.conf
-        │   ├── shtemplate.key
-        │   └── shtemplate.rc
-        ├── libs                            # donde ubicar los jars
-        │   ├── log4j-1.2.15.jar
-        │   └── *.jar
-        ├── logs                            # por si no usan soya o monopse
-        │   └── *.log
-        ├── manual                          # si acaso llegan a ensamblar un man
-        │   ├── shtemplate.1
-        │   └── shtemplate.pod
-        ├── utils                           # utilerias
-        │   ├── shdecrypt.sh
-        │   ├── shencrypt.sh
-        │   ├── libutils.sh
-        │   └── sh
         ├── LICENSE
         ├── README
-        └── ROADMAP
+        ├── ROADMAP
+        ├── VERSION
+        ├── backups                 # respaldos
+        ├── bin                     # binarios
+        │   ├── shtemplate.sh
+        │   ├── shtemplate.start
+        │   └── shtemplate.stop
+        ├── cfg                     # configuracion local
+        │   ├── java.env
+        │   ├── log4j.properties
+        │   ├── shtemplate.conf
+        │   └── shtemplate.key
+        ├── install.sh
+        ├── lib                     # bibliotecas / jars
+        │   ├── commons-collections.jar
+        │   └── log4j.jar
+        ├── logs                    # registros de la aplicacion
+        │   └── *.log
+        ├── manual                  # documentacion
+        │   └── shtemplate.pod
+        ├── tmp                     # archivos de bloqueo / temporales
+        ├── utils                   # esas funciones que van a desaparecer
+        │   ├── decryptMe.sh
+        │   ├── encryptMe.sh
+        │   ├── test.sh
+        │   └── utils.lib
+        └── vendor                  # bibliotecas necesarias para funcionar
+            ├── jCommons.lib
+            ├── java.env
+            ├── java.policy
+            ├── tCommons.lib
+            └── unix.profile   
+        .
 
     Aplicacion
         .
@@ -78,11 +84,11 @@ Do you want help us, send us your commits <aquino@hp.com>
         │   │        ${HOME}/shtemplate/bin/shtemplate.stop
         │   └── myApplication.check ->
         │            ${HOME}/shtemplate/bin/shtemplate.check
-        ├── conf 
-        │   ├── myApplication.conf
-        │   ├── log4j.properties
-        │   └── setEnvironment.rc
-        ├── libs 
+        ├── cfg 
+        │   ├── appl.env
+        │   ├── java.env
+        │   └── log4j.properties
+        ├── lib
         │   └── *.jar
         ├── logs 
         │   └── *.log
