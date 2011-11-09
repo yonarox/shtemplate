@@ -1,169 +1,145 @@
-#!/bin/sh
-# vim: set filetype=sh sw=2 sts=2 et si ai:
+#!/bin/sh 
+# vim: set filetype=sh ts=2 sw=2 sts=2 et si ai: 
 
-# tCommons.lib 
-# =
+# tCommons.lib
+# -
 #
 # Andres Aquino <aquino(at)hp.com>
 # Hewlett-Packard Company | EBS
-#
+# 
 
-#
-# user local enviroment
-_ULAND="`uname -s`"
-_UHOST=`hostname | sed -e "s/\..*//g"`
-_UDATE=`date "+%Y%m%d"`
-_UHOUR=`date "+%H%M"`
-_UTIME="${_UDATE}${_UHOUR}"
-_UUSER=`id -u -n`
-_UNAME="Andres Aquino"
-_UMAIL="aquino(at)hp.com"
-_UWORK="Hewlett-Packard Company | EBS"
-_UPATH="paths.d"
-_UCOLR=true
-_UDEBG=false
-_UECHO=`which echo`
-
-# applications environment
-_PFLOG=~/tCommons.log
-
-
-# Prints a message 
-print_to () {
-  local message="${1}"
-  
-  case "${_ULAND}" in
-    "HP-UX")
-      ${_UECHO} "${message}"
-      ;;
-
-    "Linux")
-      echo -e -n "${message} \n"
-      ;;
-
-    "Darwin")
-      echo -e -n "${message} \n"
-      ;;
-
-    *)
-      ${_UECHO} "${message} "
-      ;;
-  esac
-
-}
-
-
-# logger
-log_to () {
-  local message=${1}
-  local ldate=`date "+%Y-%m-%d"`
-  local ltime=`date "+%H:%M:%S"`
-
-  ${_UDEBG} && print_to "${ldate} ${ltime} : ${message}" >> ${_PFLOG}
-}
-
-# status
-status () {
-  local last_err=${1}
-  local last_msg=${2}
-  
-  [ -z "${last_msg}" ] && last_msg="${last_err}"
-  print_to " ${CRESET}${last_msg}${CRESET}"
-  [ "${last_err}" = "${last_msg}" ] && return
-  tput cuu1 && tput cuf $((`tput cols` - 12))
-  [ ${last_err} -eq 0 ] && 
-    print_to "${CRESET}...[${TXTGRN} * ${CRESET}]" || 
-    print_to "${CRESET}...[${TXTRED} ! ${CRESET}]"
-  tput sc
-
-}
+# This is the user profile enviroment file
+# See bash_rc or bash_profile for more information.
 
 # set environment
-init_environment () {
+function LoadEnvironment
+{
+  # Behavior
+  # input mode
+  set -o vi
 
   # permissions by default over new files/directories
-  umask 0027
+  umask 0007
+
+  # Predefined variables
+  export U_LAND="`uname -s`"
+  export U_HOST="`hostname | sed -e 's/\..*//g'`"
+  export U_DATE="`date "+%Y%m%d"`"
+  export U_HOUR="`date "+%H%M"`"
+  export U_TIME="${U_DATE}${U_HOUR}"
+  export U_NAME="Andres Aquino"
+  export U_MAIL="aquino(at)hp.com"
+  export U_WORK="Hewlett-Packard Company | EBS"
+
+  # debug
+  ${U_DEBG} || export U_DEBG=true
 
   # Terminal 
-  export _UTERM="TERM"
-  export HOSTNAME=`hostname`
+  export U_TERM="TERM"
+  export EDITOR=vi
   export LANG="C"
 
   # Java Environment
-  export CLASSPATH=
   export JAVA_HOME=
+  export JRE_HOME=
   export SHLIB_PATH=
+  export U_PATH=${PATH}
 
-  # get IP Address 
-  _IFACE=
-  [ "${_ULAND}" = "HP-UX" ]  && _IFACE=lan
-  [ "${_ULAND}" = "Linux" ]  && _IFACE=eth
-  [ "${_ULAND}" = "Darwin" ] && _IFACE=en
+  # System binaries
+  [ -d /bin ] && PATH=/bin:${PATH}
+  [ -d /sbin ] && PATH=/sbin:${PATH}
+  [ -d /usr/bin ] && PATH=/usr/bin:${PATH}
+  [ -d /usr/sbin ] && PATH=/usr/sbin:${PATH}
+ 
+  # history file and manuals
+  export HISTSIZE=1500
+  export HISTCONTROL=ignoredups
+  export MANPATH=${HOME}/manuals:${MANPATH}
 
-  # .. from two network interfaces
-  for _NDEV in 0 1 2
+  # Terminal settings by SO
+  export HOSTNAME=`hostname`
+  export TERM="xterm"
+  export CLICOLOR="hxfxcxdxbxegedabagacad"
+  export LSCOLORS="hxfxcxdxbxegedabagacad"
+
+  # every os have a specific name for network interfaces 
+  IFACE=
+  [ "${U_LAND}" = "HP-UX" ]  && INTERFACE=lan
+  [ "${U_LAND}" = "Linux" ]  && INTERFACE=eth
+  [ "${U_LAND}" = "Darwin" ] && INTERFACE=en
+
+  # .. and for any device
+  for NDEV in 0 1 2 3 4
   do
-    _NFACE="${_IFACE}${_NDEV}"
-    _IPADDR=`ifconfig ${_NFACE} 2> /dev/null| awk '/inet [addr:]*/ {print $2}' | sed -e "s/.*://g"`
-    [ -n "${_IPADDR}" ] && break
+    U_DEVICE="${INTERFACE}${NDEV}"
+    U_ADDRESS=`ifconfig ${U_DEVICE} 2> /dev/null| awk '/inet [addr:]*/ {print $2}' | sed -e "s/.*://g"`
+    [ -n "${U_ADDRESS}" ] && break
   done
-
-  # using ..
-  log_to "[${_IPADDR} ${HOSTNAME}] is running ${_ULAND}, (`uname -r`)"
+  
+  # sweet lo0, sweet localhost 
+  [ -z "${U_ADDRESS}" ] && U_ADDRESS="127.0.0.1"
 
   # setting locale  
-  CLTYPE="\033"
-  TABS="  "
-  [ "${_ULAND}" = "Linux" ] && CLTYPE="\e" 
-  [ "${_ULAND}" != "HP-UX" ] && LANG="en_US.UTF-8"
+  SEQESCAPE="\033"
+  FUNCTIONS="declare"
+  [ "${U_LAND}" = "Linux" ] && SEQESCAPE="\e" 
+  [ "${U_LAND}" != "HP-UX" ] && EDITOR=vim && LANG="en_US.UTF-8"
+  [ "${U_LAND}" = "HP-UX" ] && FUNCTIONS="typeset"
 
   # loading a terminal or only a process
-  _UTERM="PROCESS"
   stty 2> /dev/null | grep -q 'baud' 
-  [ $? -ne 0 ] && _UTERM="PROCESS"
-  ${_UCOLR} && _UTERM="CONSOLE" 
-  if [ ${_UTERM} = "CONSOLE" ]
+  if [ $? -eq 0 ]
   then
+    stty erase "^?"
+    stty intr "^C" 
+    stty kill "^U" 
+    stty stop "^S"
+    stty susp "^Z"
+    stty werase "^W"
+
     # command line _eye candy_
-    CRESET="${CLTYPE}[0m"    # Text Reset
-    TXTBLK="${CLTYPE}[0;30m" # Black - Regular
-    TXTRED="${CLTYPE}[0;31m" # Red
-    TXTGRN="${CLTYPE}[0;32m" # Green
-    TXTYLW="${CLTYPE}[0;33m" # Yellow
-    TXTBLU="${CLTYPE}[0;34m" # Blue
-    TXTPUR="${CLTYPE}[0;35m" # Purple
-    TXTCYN="${CLTYPE}[0;36m" # Cyan
-    TXTWHT="${CLTYPE}[0;37m" # White
-    BLDBLK="${CLTYPE}[1;30m" # Black - Bold
-    BLDRED="${CLTYPE}[1;31m" # Red
-    BLDGRN="${CLTYPE}[1;32m" # Green
-    BLDYLW="${CLTYPE}[1;33m" # Yellow
-    BLDBLU="${CLTYPE}[1;34m" # Blue
-    BLDPUR="${CLTYPE}[1;35m" # Purple
-    BLDCYN="${CLTYPE}[1;36m" # Cyan
-    BLDWHT="${CLTYPE}[1;37m" # White
-    UNKBLK="${CLTYPE}[4;30m" # Black - Underline
-    UNDRED="${CLTYPE}[4;31m" # Red
-    UNDGRN="${CLTYPE}[4;32m" # Green
-    UNDYLW="${CLTYPE}[4;33m" # Yellow
-    UNDBLU="${CLTYPE}[4;34m" # Blue
-    UNDPUR="${CLTYPE}[4;35m" # Purple
-    UNDCYN="${CLTYPE}[4;36m" # Cyan
-    UNDWHT="${CLTYPE}[4;37m" # White
-    BAKBLK="${CLTYPE}[40m"   # Black - Background
-    BAKRED="${CLTYPE}[41m"   # Red
-    BAKGRN="${CLTYPE}[42m"   # Green
-    BAKYLW="${CLTYPE}[43m"   # Yellow
-    BAKBLU="${CLTYPE}[44m"   # Blue
-    BAKPUR="${CLTYPE}[45m"   # Purple
-    BAKCYN="${CLTYPE}[46m"   # Cyan
-    BAKWHT="${CLTYPE}[47m"   # White
+    U_TERM="CONSOLE"
+
+    # command line _eye candy_
+    CRESET="${SEQESCAPE}[0m"    # Text Reset
+    TXTBLK="${SEQESCAPE}[0;30m" # Black - Regular
+    TXTRED="${SEQESCAPE}[0;31m" # Red
+    TXTGRN="${SEQESCAPE}[0;32m" # Green
+    TXTYLW="${SEQESCAPE}[0;33m" # Yellow
+    TXTBLU="${SEQESCAPE}[0;34m" # Blue
+    TXTPUR="${SEQESCAPE}[0;35m" # Purple
+    TXTCYN="${SEQESCAPE}[0;36m" # Cyan
+    TXTWHT="${SEQESCAPE}[0;37m" # White
+    BLDBLK="${SEQESCAPE}[1;30m" # Black - Bold
+    BLDRED="${SEQESCAPE}[1;31m" # Red
+    BLDGRN="${SEQESCAPE}[1;32m" # Green
+    BLDYLW="${SEQESCAPE}[1;33m" # Yellow
+    BLDBLU="${SEQESCAPE}[1;34m" # Blue
+    BLDPUR="${SEQESCAPE}[1;35m" # Purple
+    BLDCYN="${SEQESCAPE}[1;36m" # Cyan
+    BLDWHT="${SEQESCAPE}[1;37m" # White
+    UNKBLK="${SEQESCAPE}[4;30m" # Black - Underline
+    UNDRED="${SEQESCAPE}[4;31m" # Red
+    UNDGRN="${SEQESCAPE}[4;32m" # Green
+    UNDYLW="${SEQESCAPE}[4;33m" # Yellow
+    UNDBLU="${SEQESCAPE}[4;34m" # Blue
+    UNDPUR="${SEQESCAPE}[4;35m" # Purple
+    UNDCYN="${SEQESCAPE}[4;36m" # Cyan
+    UNDWHT="${SEQESCAPE}[4;37m" # White
+    BAKBLK="${SEQESCAPE}[40m"   # Black - Background
+    BAKRED="${SEQESCAPE}[41m"   # Red
+    BAKGRN="${SEQESCAPE}[42m"   # Green
+    BAKYLW="${SEQESCAPE}[43m"   # Yellow
+    BAKBLU="${SEQESCAPE}[44m"   # Blue
+    BAKPUR="${SEQESCAPE}[45m"   # Purple
+    BAKCYN="${SEQESCAPE}[46m"   # Cyan
+    BAKWHT="${SEQESCAPE}[47m"   # White
 
   else
     # command line _eye candy_
-    _UTERM="TERM"
-    CRESET="${CLTYPE}[0m"    # Text Reset
-    TXTBLK="${CLTYPE}[0;30m" # Black - Regular
+    U_TERM="TERM"
+    CRESET="${SEQESCAPE}[0m"    # Text Reset
+    TXTBLK="${SEQESCAPE}[0;30m" # Black - Regular
     TXTRED="" # Red
     TXTGRN="" # Green
     TXTYLW="" # Yellow
@@ -173,108 +149,218 @@ init_environment () {
     TXTWHT="" # White
 
   fi
-  
-  log_to "Environment under ${_UTERM}"
-  
-  # set applications path 
-  _opath=${PATH}
 
+  # Common alias
+  alias ls="ls -F"
+  alias ll="ls -l"
+  alias la="ll -a"
+  alias lt="la -t"
+  alias lr="lt -r"
+  alias pw="pwd"
+  alias java16="JavaEnvironment java16"
+  alias java15="JavaEnvironment java15"
+  alias java14="JavaEnvironment java14"
+  alias java13="JavaEnvironment java13"
+  alias version="ShowVersion"
+  alias defn="${FUNCTIONS}"
+ 
 }
 
+# Prints a message 
+function PrintOut
+{
+  local message="${1}"
 
-# Define a execution unix path reading each file in paths.d
-set_paths () {
-  local localpath=
-
-  # if not exist or is empty, exit 
-  [ ! -d ${HOME}/${_UPATH} ] || [ -z "$(ls -A ${HOME}/${_UPATH})" ] && return 0
-
-  for pathfile in ${HOME}/${_UPATH}/*
-  do
-    # empty file
-    [ ! -s ${pathfile} ] && continue
+  case "${U_LAND}" in
+    "HP-UX")
+      echo "${message}"
+    ;;
+      
+    "Linux")
+      echo -e -n "${message} \n"
+    ;;
     
-    # include java path
-    grep -q java ${pathfile} && continue 
-
-    # for each file, get paths and add to execution path
-    for eachpath in $(cat ${pathfile})
-    do
-      # get one line (path) and verify: is this a directory? 
-      eachpath="$(eval echo ${eachpath} | sed -e 's/ *//g')"
-      [ ! -d ${eachpath} ] && break 
-
-      localpath=${eachpath}:${localpath}
-      log_to "Adding path: ${eachpath}"
-    done
-  done
-
-  # User binaries  
-  [ -d ${HOME}/bin ] && localpath=${HOME}/bin:${localpath}
-
-  local=.:${localpath}
-  PATH=${localpath}:${_opath}
+    "Darwin")
+      echo -e -n "${message} \n"
+    ;;
+      
+    *)
+      ${_echo} "${message} "
+    ;;
+  esac
 
 }
 
+function LoadProfile 
+{
+  local U_PROFILE=${1}
+  if [ -s ${U_PROFILE} ]
+  then
+    . ${U_PROFILE} > /dev/null 2>&1
+    U_PROFILE=`basename ${U_PROFILE}`
+    LogInfo "Loading profile ${U_PROFILE}"
+  fi
+
+}
 
 # Set a java environment
-set_javaversion()
+function JavaEnvironment
 {
-  local java_version="${1}"
-  local bin_path=
+  local JAVA_ENV="${1}"
 
   # if not exist or is empty, exit 
-  [ ! -d ${HOME}/${_UPATH} ] || [ -z "$(ls -A ${HOME}/${_UPATH})" ] && return 0
+  [ ! -d ${HOME}/paths.d ] || [ -z "$(ls -A ${HOME}/paths.d)" ] && return 0
 
   # rebuild path and validate
-  local JAVA_PROF="${HOME}/${_UPATH}/${java_version}"
+  JAVA_PROF="${HOME}/paths.d/${JAVA_ENV}"
   
   # java path file? 
   grep -q java "${JAVA_PROF}" || return 0
 
   # reload paths to eliminate some java previous settings
-  localpaths
+  SetLocalPaths
 
   # Workaround
   # for OS-X systems, java commands are in Commands/ 
-  bin_path="bin"
-  [ ${_ULAND} = "Darwin" ] && bin_path="Commands"
+  BINARIES="bin"
+  [ ${U_LAND} = "Darwin" ] && BINARIES="Commands"
 
   # rebuild path with java home
   for eachpath in $(cat ${JAVA_PROF})
   do
     # expand vars
     eachpath="$(eval echo ${eachpath})"
-    if [ -d ${eachpath}/${bin_path} ] 
+    if [ -d ${eachpath}/${BINARIES} ] 
     then
-      PATH=${eachpath}/${bin_path}:${PATH}
-      log_to "Adding path: ${eachpath}/${bin_path}"
-
+      # FIX:
+      # must to use java bin of JRE_HOME firts 
       JAVA_HOME=${eachpath}
+      JRE_HOME=${JAVA_HOME}/jre
+      [ -d ${JAVA_HOME} ] && PATH=${JAVA_HOME}/${BINARIES}:${PATH}
+      [ -d ${JRE_HOME}  ] && PATH=${JRE_HOME}/${BINARIES}:${PATH}
+      LogInfo "Adding new path: ${eachpath}/${BINARIES}"
+
       JAVA_VERSION=`java -version 2>&1 | grep "version" | sed -e "s/\"//g;s/.*ion //g"`
-      log_to "Setting JAVA_HOME to ${eachpath}, Ver. ${JAVA_VERSION}"
+      LogInfo "Setting JAVA_HOME to ${eachpath}, Ver. ${JAVA_VERSION}"
       
       # workaround hp-ux & java16
-      [ ${_ULAND} = "HP-UX" ] && [ ${JAVA_ENV} = "java16" ] && SHLIB_PATH=${JAVA_HOME}/jre/lib/PA_RISC2.0/jli
+      [ ${U_LAND} = "HP-UX" ] && [ ${JAVA_ENV} = "java16" ] && SHLIB_PATH=${JAVA_HOME}/jre/lib/PA_RISC2.0/jli
       return 0
     fi
   done
 
 }
 
-
-# load a new profile without errors (sending to dev/null)
-set_profile()
+# Define a execution unix path reading each file in Paths.d
+function SetLocalPaths 
 {
-  local uprofile=${1}
-  if [ -s ${uprofile} ]
-  then
-    . ${uprofile} > /dev/null 2>&1
-    log_to "Load profile ${uprofile}"
-  fi
+  local LPATH=
+
+  # if not exist or is empty, exit 
+  [ ! -d ${HOME}/paths.d ] || [ -z "$(ls -A ${HOME}/paths.d)" ] && return 0
+
+  # lock for any file with path as contents
+  for pathfile in ${HOME}/paths.d/[0-9][0-9]*
+  do
+    # empty file
+    [ ! -s ${pathfile} ] && continue
+    
+    # not include java paths
+    grep -q java ${pathfile} && continue 
+
+    # for each file, get paths and add to execution path
+    bname=`basename ${pathfile}`
+    isValid=false
+    for eachpath in $(cat ${pathfile})
+    do
+      # get one line (path) and verify: is this a directory? 
+      eachpath="$(eval echo ${eachpath} | sed -e 's/ *//g')"
+      [ ! -d ${eachpath} ] && break 
+      
+      isValid=true
+      LPATH=${LPATH}:${eachpath}
+    done
+    ${isValid} && LogInfo "Loading paths ${bname}"
+  done
+
+  # User binaries  
+  [ -d ${HOME}/bin ] && LPATH="${HOME}/bin${LPATH}"
+
+  LPATH="`echo ".:${LPATH}" | sed -e 's/::/:/g'`"
+  PATH=${LPATH}:${U_PATH}
 
 }
 
+# Sets PS1 and PS2 using an _eye candy_ cmd line, if you're using Git it shows branch name
+function SetCommandStyle 
+{
+  export _USERNAME=${U_NAME}
+  export _USERMAIL=${U_MAIL}
+  export _USERWORK=${U_WORK}
 
-#
+  [ "${U_TERM}" = "TERM" ] && return 0
+  if [ "${U_LAND}" = "HP-UX" ]
+  then
+    export PS1="$(echo "\n${CRESET}[ ${TXTYLW}${U_ADDRESS}${CRESET} | ${U_HOST} ] \${PWD} \n${TXTWHT}${USER} ${CRESET}\$ ")"
+  else
+    if [ -s ~/git.profile ]
+    then
+      export PS1="\e]1;${U_ADDRESS}\a\e]2;${U_ADDRESS}:${U_HOST}\a\
+                  \n\[${CRESET}\][ \[${TXTYLW}\]${U_ADDRESS}\[${CRESET}\] | ${U_HOST} ]\[${BLDGRN}\]\$(__git_ps1 '(%s)')\[${CRESET}\] \w \
+                  \n\[${TXTWHT}\]${USER}\[${CRESET}\] \$ "
+    else
+      export PS1="\e]1;${U_ADDRESS}\a\e]2;${U_ADDRESS}:${U_HOST}\a\
+                  \n\[${CRESET}\][ \[${TXTYLW}\]${U_ADDRESS}\[${CRESET}\] | ${U_HOST} ] \w \
+                  \n\[${TXTWHT}\]${USER}\[${CRESET}\] \$ "
+    fi
+  fi
+  export PS2=" ..> "
+  unset USERNAME
+}
+
+# logger
+#LogInfo ()
+#LogError ()
+#LogAction ()
+function LogInfo 
+{
+  local message="${1}"
+  [ "${U_TERM}" = "TERM" ] && return 0
+  ${U_DEBG} && PrintOut "${TXTBLU} >>  ${TXTWHT}${message}${CRESET}"
+
+}
+
+function LogError 
+{
+  local message="${1}"
+  [ "${U_TERM}" = "TERM" ] && return 0
+  ${U_DEBG} && PrintOut "${TXTRED} *  ${TXTWHT}${message}${CRESET}"
+}
+
+function LogMessage 
+{
+  local message="${1}"
+  [ "${U_TERM}" = "TERM" ] && return 0
+  PrintOut "${CRESET}${message}"
+
+}
+
+# Shows MD5 of this profile
+function ShowVersion 
+{
+  U_FILEVERSION=`openssl dgst -md5 ~/unix.profile | rev | cut -c-4 | rev`
+  PrintOut "Profile ver.${U_FILEVERSION} (${U_LAND}) \n${U_WORK} \n\nDeveloped by \nAndres Aquino <aquino(at)hp.com>"
+}
+
+function SetWorkProfile 
+{
+  LoadProfile ~/host-office.info
+
+}
+
+function SetHomeProfile 
+{
+  LoadProfile ~/host-home.info
+
+}
+
