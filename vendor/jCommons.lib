@@ -9,7 +9,7 @@
 # 
 
 # set Environment
-jSetEnvironment () 
+function jSetEnvironment 
 {
   if [ -z "${APP_HOME}" ]
   then
@@ -23,7 +23,7 @@ jSetEnvironment ()
     PrintOut "Please, set vendor/java.env"
     exit 1
   fi
-  source ${APP_HOME}/vendor/java.env
+  . ${APP_HOME}/vendor/java.env
 
   # load user app parameters
   if [ ! -f "${APP_HOME}/cfg/appl.env" ]
@@ -31,7 +31,7 @@ jSetEnvironment ()
     PrintOut "Please, set cfg/appl.env"
     exit 1
   fi
-  source ${APP_HOME}/cfg/appl.env
+  . ${APP_HOME}/cfg/appl.env
 
   JAVA_FLAGS="-Dappname=${APP_NAME}"
 
@@ -41,15 +41,15 @@ jSetEnvironment ()
 # This setting controls the size of the Java heap.
 # Properly tuning this parameter reduces the overhead of garbage collection, 
 # improving server response time and throughput. 
-jSetSizeofMemory ()
+function jSetSizeofMemory 
 {
   # Initial Size and Maximum
   local INITIAL=${1}
   local MAXIMUM=${2}
   
   # undeclared, then default values 
-  [ ! -n "${INITIAL}" ] && INITIAL=${JMINITIAL}
-  [ ! -n "${MAXIMUM}" ] && MAXIMUM=${JMMAXIMUM}
+  [ -z "${INITIAL}" ] && INITIAL=${JAVA_MEMINITIAL}
+  [ -z "${MAXIMUM}" ] && MAXIMUM=${JAVA_MEMMAXIMUM}
 
   # ... and setting
   JAVA_FLAGS="${JAVA_FLAGS} -Xms${INITIAL} -Xmx${MAXIMUM}"
@@ -57,15 +57,15 @@ jSetSizeofMemory ()
 }
 
 # Permanent Generation Size of Memory on Hold
-jSetPermSizeofMemory ()
+function jSetPermSizeofMemory 
 {
   # Initial Size and Maximum
   local INITIAL=${1}
   local MAXIMUM=${2}
   
   # undeclared, then default values 
-  [ ! -n "${INITIAL}" ] && INITIAL=${JPINITIAL}
-  [ ! -n "${MAXIMUM}" ] && MAXIMUM=${JPMAXIMUM}
+  [ -z "${INITIAL}" ] && INITIAL=${JAVA_PERMSIZEINITIAL}
+  [ -z "${MAXIMUM}" ] && MAXIMUM=${JAVA_PERMSIZEMAXIMUM}
 
   # ... and setting
   JAVA_FLAGS="${JAVA_FLAGS} -XX:PermSize=${INITIAL} -X:MaxPermSize=${MAXIMUM}"
@@ -73,10 +73,10 @@ jSetPermSizeofMemory ()
 }
 
 # Heap Dump of Memory
-jSetHeapDump ()
+function jSetHeapDump 
 {
   # set where heapdump exists
-  local HEAPLOG="${APP_HOME}/logs/${_UTIME}.hprof"
+  local HEAPLOG="${APP_HOME}/logs/${U_TIME}.hprof"
   
   # ... and setting
   JAVA_FLAGS="${JAVA_FLAGS} -XX:+HeapDumpOnCtrlBreak"
@@ -85,10 +85,10 @@ jSetHeapDump ()
 }
 
 # Garbage Collector behaviour
-jSetGarbageCollector ()
+function jSetGarbageCollector 
 {
   # set where heapdump exists
-  local GARBAGELOG="${APP_HOME}/logs/${_UTIME}.gc"
+  local GARBAGELOG="${APP_HOME}/logs/${U_TIME}.gc"
   
   # ... and setting
   JAVA_FLAGS="${JAVA_FLAGS} -XX:+DisableExplicitGC"
@@ -98,13 +98,13 @@ jSetGarbageCollector ()
 
 # Timezone
 # Set the timezone for a single instance of a JVM process.
-jSetTimeZone ()
+function jSetTimeZone 
 {
   # local time zone 
   local TIMEZONE=${1}
 
   # undeclared, use default value
-  [ ! -n "${TIMEZONE}" ] && TIMEZONE=${JTIMEZONE}
+  [ -z "${TIMEZONE}" ] && TIMEZONE=${JAVA_TIMEZONE}
 
   # ... and setting
   JAVA_FLAGS="${JAVA_FLAGS} -Duser.timezone=${TIMEZONE}"
@@ -115,7 +115,7 @@ jSetTimeZone ()
 # The policy for a Java application environment (specifying which 
 # permissions are available for code from various sources) is 
 # represented by a Policy object.
-jSetSecurityPolicy ()
+function jSetSecurityPolicy 
 {
   #
   local POLICY=${1}
@@ -124,7 +124,7 @@ jSetSecurityPolicy ()
   POLICY="${APP_HOME}/${POLICY}"
 
   # validate or use default value
-  [ ! -f ${POLICY} ] && POLICY="${APP_HOME}/${JSEPOLICY}"
+  [ ! -f ${POLICY} ] && POLICY="${APP_HOME}/${JAVA_SECPOLICY}"
 
   # ... and setting
   JAVA_FLAGS="${JAVA_FLAGS} -Djava.security.policy=${POLICY}"
@@ -132,11 +132,11 @@ jSetSecurityPolicy ()
 }
 
 # Build a CLASSPATH
-jBuildClasspath ()
+function jBuildClasspath 
 {
   # Java Classes
   JAVA_CLASSPATH=
-  for classfile in "${APP_HOME}/lib/*.jar"
+  for classfile in ${APP_HOME}/lib/*.jar
   do
     JAVA_CLASSPATH="${classfile}:${JAVA_CLASSPATH}"
   done
@@ -144,59 +144,62 @@ jBuildClasspath ()
   # if receive an additional directory
   [ -d ${APP_HOME}/${1} ] && JAVA_CLASSPATH="${APP_HOME}/${1}:${JAVA_CLASSPATH}"
 
-  export CLASSPATH="${JAVA_CLASSPATH}:."
+  export CLASSPATH="`echo "${JAVA_CLASSPATH}:." | sed -e 's/::/:/g'`"
 
 }
 
 #
-jLoadRMIProcess ()
+function jLoadRMIProcess 
 {
   # initial RMI parameters 
   local RMIBASE=${1}
   local RMIPORT=${2}
 
+  export JAVA_RMI=
+
   # undefined, use defaults
-  [ -n "${RMIBASE}" ] && RMIBASE=${JP_RMIBASE}
-  [ -n "${RMIPORT}" ] && RMIPORT=${JP_RMIPORT}
+  [ -z "${RMIBASE}" ] && RMIBASE=${JAVA_RMIBASE}
+  [ -z "${RMIPORT}" ] && RMIPORT=${JAVA_RMIPORT}
 
   # define flag
-  RMIBASE="${APP_HOME}/lib/${RMIBASE}"
   [ -f ${APP_HOME}/${APP_NAME}-rmi.lck ] && PrintOut "Some RMI process exists" && return 1
-  if [ ! -f ${RMIBASE} ]
+  if [ ! -f ${APP_HOME}/lib/${RMIBASE} ]
   then
-    LogMessage "Any RMI CodeBase file exists, verify ${RMIBASE}"
+    LogMessage "Any RMI CodeBase file exists, verify ${APP_HOME}/lib/${RMIBASE}"
     return 1
   else
-    echo "rmiregistry ${RMIPORT}" && return 0
-    rmiregistry ${RMIPORT} 2>&1 &
+    echo "rmiregistry ${RMIPORT}" 
+    #rmiregistry ${RMIPORT} 2>&1 &
     echo $! > ${APP_HOME}/${APP_NAME}-rmi.lck
-    JAVA_RMI="file://${RMIBASE}"
+    JAVA_RMI="file://${APP_HOME}/lib/${RMIBASE}"
+    export JAVA_RMIBASE="${RMIBASE}"
+    export JAVA_RMIPORT="${RMIPORT}"
 
   fi
 
 }
 
 #
-jUnloadRMIProcess ()
+function jUnloadRMIProcess 
 {
   lockfile="${APP_HOME}/${APP_NAME}-rmi.lck"
   [ -f ${lockfile} ] && kill -9 $(cat ${lockfile}) && rm ${lockfile}
 }
 
 #
-jLoadJARProcess ()
+function jLoadJARProcess 
 {
   # indicate to use RMI
   local CMD=${1}
 
   if [ "${CMD}" = "USE_RMI" ]
   then
-    echo "java ${JAVA_FLAGS} ${JAVA_RMI} -jar ${RMIBASE}" && return 0
-    java ${JAVA_FLAGS} ${JAVA_RMI} -jar ${RMIBASE} 2>&1 &
+    echo "java ${JAVA_FLAGS} -Djava.rmi.server.codebase=${JAVA_RMI} -jar ${APP_HOME}/lib/${JAVA_RMIBASE}" && return 0
+    #java ${JAVA_FLAGS} -Djava.rmi.server.codebase=${JAVA_RMI} -jar ${APP_HOME}/lib/${JAVA_RMIBASE} 2>&1 &
     echo $! > ${APP_HOME}/${APP_NAME}-jar.lck
   else
-    echo "java ${JAVA_FLAGS} -jar ${RMIBASE}" && return 0
-    java ${JAVA_FLAGS} -jar ${RMIBASE} 2>&1 &
+    echo "java ${JAVA_FLAGS} -jar ${APP_HOME}/lib/${JAVA_RMIBASE}" && return 0
+    #java ${JAVA_FLAGS} -jar ${APP_HOME}/lib/${JAVA_RMIBASE} 2>&1 &
     echo $! > ${APP_HOME}/${APP_NAME}-jar.lck
 
   fi
@@ -204,7 +207,7 @@ jLoadJARProcess ()
 }
 
 #
-jUnloadJARProcess ()
+function jUnloadJARProcess 
 {
   lockfile="${APP_HOME}/${APP_NAME}-jar.lck"
   [ -f ${lockfile} ] && kill -9 $(cat ${lockfile}) && rm ${lockfile}
@@ -212,19 +215,19 @@ jUnloadJARProcess ()
 }
 
 #
-jLoadCLASSProcess ()
+function jLoadCLASSProcess 
 {
   # indicate to use RMI
   local CMD=${1}
 
-  echo "java ${JAVA_FLAGS} -cp ${CLASSPATH} ${JP_CLS} ${CMD}" && return 0
-  java ${JAVA_FLAGS} -cp ${CLASSPATH} ${JP_CLS} ${CMD} 2>&1 &
+  echo "java ${JAVA_FLAGS} -cp ${CLASSPATH} ${JAVA_MAINCLASS} ${CMD}" 
+  #java ${JAVA_FLAGS} -cp ${CLASSPATH} ${JAVA_MAINCLASS} ${CMD} 2>&1 &
   echo $! > ${APP_HOME}/${APP_NAME}-cls.lck
 
 }
 
 #
-jUnloadCLASSProcess ()
+function jUnloadCLASSProcess 
 {
   lockfile="${APP_HOME}/${APP_NAME}-cls.lck"
   [ -f ${lockfile} ] && kill -9 $(cat ${lockfile}) && rm ${lockfile}
