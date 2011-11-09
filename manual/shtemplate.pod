@@ -24,26 +24,43 @@
  Esquema
  -
     .
-    ├── backups 
-    │   └── *.bkp
-    ├── bin 
-    │   ├── myApplication.start -> 
-    │   │        ${HOME}/ShellTemplate/bin/shelltemplate.start
-    │   ├── myApplication.stop  -> 
-    │   │        ${HOME}/ShellTemplate/bin/shelltemplate.stop
-    │   └── myApplication.check -> 
-    │            ${HOME}/ShellTemplate/bin/shelltemplate.check
-    ├── conf 
-    │   ├── myApplication.conf
-    │   ├── log4j.properties
-    │   └── setEnvironment.rc
-    ├── libs 
-    │   └── *.jar
-    ├── logs 
-    │   └── *.log
-    └── README
-
- 1 directory, 12 files
+    |-- LICENSE
+    |-- README
+    |-- ROADMAP
+    |-- VERSION
+    |-- backups
+    |   `-- *.bkp
+    |-- bin
+    |   |-- shtemplate.sh
+    |   |-- shtemplate.start
+    |   `-- shtemplate.stop
+    |-- cfg
+    |   |-- java.env
+    |   |-- log4j.properties
+    |   |-- shtemplate.conf
+    |   `-- shtemplate.key
+    |-- lib
+    |   `-- *.jar
+    |-- logs
+    |   `-- *.log
+    |-- manual
+    |   |-- shtemplate.1
+    |   `-- shtemplate.pod
+    |-- tmp
+    |   |-- shtemplate.lck
+    |   `-- shtemplate.pid
+    |-- utils
+    |   |-- decryptMe.sh
+    |   |-- encryptMe.sh
+    |   |-- test.sh
+    |   |-- install.sh
+    |   `-- utils.lib
+    `-- vendor
+        |-- jCommons.lib
+        |-- java.env
+        |-- java.policy
+        |-- tCommons.lib
+        `-- unix.profile
 
  Otros:
  De la configuracion
