@@ -43,27 +43,25 @@ function jSetPermSizeofMemory
 
 }
 
-# Heap Dump of Memory
+# Set Heapdump of Memory
 function jSetHeapDump 
 {
   # set where heapdump exists
-  local HEAPLOG="${APP_HOME}/logs/${U_TIME}.hprof"
+  local HEAPLOG="${APP_JLOGS}/${U_TIME}.hprof"
   
   # ... and setting
-  JAVA_FLAGS="${JAVA_FLAGS} -XX:+HeapDumpOnCtrlBreak"
-  JAVA_FLAGS="${JAVA_FLAGS} -XX:HeapDumpPath=${HEAPLOG}"
+  JAVA_FLAGS="${JAVA_FLAGS} -XX:+HeapDumpOnCtrlBreak -XX:HeapDumpPath=${HEAPLOG}"
 
 }
 
-# Garbage Collector behaviour
+# Set Garbage Collector behaviour
 function jSetGarbageCollector 
 {
   # set where heapdump exists
-  local GARBAGELOG="${APP_HOME}/logs/${U_TIME}.gc"
+  local GARBAGELOG="${APP_JLOGS}/${U_TIME}.gc"
   
   # ... and setting
-  JAVA_FLAGS="${JAVA_FLAGS} -XX:+DisableExplicitGC"
-  JAVA_FLAGS="${JAVA_FLAGS} -XX:file=${GARBAGELOG}"
+  JAVA_FLAGS="${JAVA_FLAGS} -XX:+DisableExplicitGC -XX:file=${GARBAGELOG}"
 
 }
 
@@ -96,10 +94,10 @@ function jSetSecurityPolicy
   local POLICY=${1}
 
   # build policy path in this manner, Path = $APP_HOME + $POLICY 
-  POLICY="${APP_HOME}/${POLICY}"
+  POLICY="${APP_JHOME}/${POLICY}"
 
   # validate or use default value
-  [ ! -f ${POLICY} ] && POLICY="${APP_HOME}/${JAVA_SECPOLICY}"
+  [ ! -f ${POLICY} ] && POLICY="${APP_JCONF}/${JAVA_SECPOLICY}"
 
   # ... and setting
   JAVA_FLAGS="${JAVA_FLAGS} -Djava.security.policy=${POLICY}"
@@ -114,13 +112,14 @@ function jBuildClasspath
 
   # Java Classes
   JAVA_CLASSPATH=
-  for CLFILE in ${APP_HOME}/lib/*.jar
+  for CLFILE in ${APP_JLIBR}/*.jar
   do
     JAVA_CLASSPATH="${CLFILE}:${JAVA_CLASSPATH}"
   done
   
   # if receive an additional directory
-  [ -d ${APP_HOME}/${1} ] && JAVA_CLASSPATH="${APP_HOME}/${1}:${JAVA_CLASSPATH}"
+  [ -n "${1}" ] && CLFILE="${APP_HOME}/${1}"
+  [ -d "${CLFILE}" ] && JAVA_CLASSPATH="${CLFILE}/:${JAVA_CLASSPATH}"
 
   export CLASSPATH="`echo "${JAVA_CLASSPATH}:." | sed -e 's/::/:/g'`"
 
@@ -131,30 +130,51 @@ function jLoadProperties
 {
   local PRFILE="${1}"
 
+  # load main environment
+  LoadEnvironment
+
   # load ${APPNAME} properties file
-  PRFILE="`basename ${PRFILE%.*}`"
   PRFILE="${HOME}/.${PRFILE}rc"
   [ ! -f ${PRFILE} ] && PrintOut "Error! No existe archivo ${PRFILE}" && exit 1
   . ${PRFILE}
+
+  # define new or old structure
+  APP_JHOME="${APP_HOME}"
+  APP_JLIBR="${APP_JHOME}/lib"
+  APP_JBCKP="${APP_JHOME}/backup"
+  [ -d "${APP_JHOME}/cfg" ] && APP_JCONF="${APP_JHOME}/cfg" || APP_JCONF="${APP_JHOME}/config"
+  [ -d "${APP_JHOME}/logs" ] && APP_JLOGS="${APP_JHOME}/logs" || APP_JLOGS="${APP_JHOME}/log"
+  [ -d "${APP_JHOME}/tmp" ] && APP_JTEMP="${APP_JHOME}/tmp" || APP_JTEMP="/tmp"
   
-  # load main environment
-  LoadEnvironment
+  # build environment
+  [ -n "${JAVA_MEMINITIAL}" -a -n "${JAVA_MEMMAXIMUM}" ] && jSetSizeofMemory
+  [ -n "${JAVA_PERMSIZEINITIAL}" -a -n "${JAVA_PERMSIZEMAXIMUM}" ] && jSetPermSizeofMemory
+  [ -n "${JAVA_TIMEZONE}" ] && jSetTimeZone
+  [ -n "${JAVA_SECPOLICY}" ] && jSetSecurityPolicy
+  jBuildClasspath
 }
 
 function jShowProperties
 {
-  PrintOut "${BLDYLW}${APP_NAME}"
-  PrintOut "${CRESET}-------------------------------------------------------------------"
-  PrintOut "${CRESET}  App Name    :${TXTYLW} ${APP_NAME}"
-  PrintOut "${CRESET}  App Home    :${TXTYLW} ${APP_HOME}"
-  PrintOut "${CRESET}  Language    :${TXTYLW} ${JAVA_LANGUAGE}"
-  PrintOut "${CRESET}  Timezone    :${TXTYLW} ${JAVA_TIMEZONE}"
-  PrintOut "${CRESET}  MemInitial  :${TXTYLW} ${JAVA_MEMINITIAL}"
-  PrintOut "${CRESET}  MemMaximum  :${TXTYLW} ${JAVA_MEMMAXIMUM}"
-  PrintOut "${CRESET}  PermInitial :${TXTYLW} ${JAVA_PERMSIZEINITIAL}"
-  PrintOut "${CRESET}  PermMaximum :${TXTYLW} ${JAVA_PERMSIZEMAXIMUM}"
-  PrintOut "${CRESET}  SecPolicy   :${TXTYLW} ${JAVA_SECPOLICY}"
-  PrintOut "${CRESET}  Classpath   :${TXTYLW} ${JAVA_CLASSPATH}"
+  PrintOut "${BLDRED}${APP_NAME}"
+  PrintOut "${CRESET} | |- Name       :${TXTYLW} ${APP_NAME}"
+  PrintOut "${CRESET} | |- Home       :${TXTYLW} ${APP_JHOME}"
+  PrintOut "${CRESET} | |- Library    :${TXTYLW} ${APP_JLIBR}"
+  PrintOut "${CRESET} | |- Backup     :${TXTYLW} ${APP_JBCKP}"
+  PrintOut "${CRESET} | |- Config     :${TXTYLW} ${APP_JCONF}"
+  PrintOut "${CRESET} | |- Logs       :${TXTYLW} ${APP_JLOGS}"
+  PrintOut "${CRESET} | |- Temporal   :${TXTYLW} ${APP_JTEMP}"
+  PrintOut "${CRESET} | '- Vendor     :${TXTYLW} ${APP_JVNDR}"
+  PrintOut "${CRESET} |- JVM"
+  PrintOut "${CRESET}  |- Language    :${TXTYLW} ${JAVA_LANGUAGE}"
+  PrintOut "${CRESET}  |- Timezone    :${TXTYLW} ${JAVA_TIMEZONE}"
+  PrintOut "${CRESET}  |- MemInitial  :${TXTYLW} ${JAVA_MEMINITIAL}"
+  PrintOut "${CRESET}  |- MemMaximum  :${TXTYLW} ${JAVA_MEMMAXIMUM}"
+  PrintOut "${CRESET}  |- PermInitial :${TXTYLW} ${JAVA_PERMSIZEINITIAL}"
+  PrintOut "${CRESET}  |- PermMaximum :${TXTYLW} ${JAVA_PERMSIZEMAXIMUM}"
+  PrintOut "${CRESET}  |- SecPolicy   :${TXTYLW} ${JAVA_SECPOLICY}"
+  PrintOut "${CRESET}  |- Java Flags  :${TXTYLW} ${JAVA_FLAGS}"
+  PrintOut "${CRESET}  '- Classpath   :${TXTYLW} ${JAVA_CLASSPATH}"
 }
 
 #
@@ -171,16 +191,16 @@ function jLoadRMIProcess
   [ -z "${RMIPORT}" ] && RMIPORT=${JAVA_RMIPORT}
 
   # define flag
-  [ -f ${APP_HOME}/${APP_NAME}-rmi.lck ] && PrintOut "Some RMI process exists" && return 1
-  if [ ! -f ${APP_HOME}/lib/${RMIBASE} ]
+  [ -f ${APP_JTEMP}/${APP_NAME}-rmi.lck ] && PrintOut "Some RMI process exists" && return 1
+  if [ ! -f ${APP_JLIBR}/${RMIBASE} ]
   then
-    LogMessage "Any RMI CodeBase file exists, verify ${APP_HOME}/lib/${RMIBASE}"
+    LogMessage "Any RMI CodeBase file exists, verify ${APP_JLIBR}/${RMIBASE}"
     return 1
   else
     echo "rmiregistry ${RMIPORT}" 
     #rmiregistry ${RMIPORT} 2>&1 &
-    echo $! > ${APP_HOME}/${APP_NAME}-rmi.lck
-    JAVA_RMI="file://${APP_HOME}/lib/${RMIBASE}"
+    echo $! > ${APP_JTEMP}/${APP_NAME}-rmi.lck
+    JAVA_RMI="file://${APP_JLIBR}/${RMIBASE}"
     export JAVA_RMIBASE="${RMIBASE}"
     export JAVA_RMIPORT="${RMIPORT}"
 
@@ -191,7 +211,7 @@ function jLoadRMIProcess
 #
 function jUnloadRMIProcess 
 {
-  lockfile="${APP_HOME}/${APP_NAME}-rmi.lck"
+  lockfile="${APP_JTEMP}/${APP_NAME}-rmi.lck"
   [ -f ${lockfile} ] && kill -9 $(cat ${lockfile}) && rm ${lockfile}
 }
 
@@ -203,13 +223,13 @@ function jLoadJARProcess
 
   if [ "${CMD}" = "USE_RMI" ]
   then
-    echo "java ${JAVA_FLAGS} -Djava.rmi.server.codebase=${JAVA_RMI} -jar ${APP_HOME}/lib/${JAVA_RMIBASE}" && return 0
-    #java ${JAVA_FLAGS} -Djava.rmi.server.codebase=${JAVA_RMI} -jar ${APP_HOME}/lib/${JAVA_RMIBASE} 2>&1 &
-    echo $! > ${APP_HOME}/${APP_NAME}-jar.lck
+    echo "java ${JAVA_FLAGS} -Djava.rmi.server.codebase=${JAVA_RMI} -jar ${APP_JLIBR}/${JAVA_RMIBASE}" && return 0
+    #java ${JAVA_FLAGS} -Djava.rmi.server.codebase=${JAVA_RMI} -jar ${APP_JLIBR}/${JAVA_RMIBASE} 2>&1 &
+    echo $! > ${APP_JTEMP}/${APP_NAME}-jar.lck
   else
-    echo "java ${JAVA_FLAGS} -jar ${APP_HOME}/lib/${JAVA_RMIBASE}" && return 0
-    #java ${JAVA_FLAGS} -jar ${APP_HOME}/lib/${JAVA_RMIBASE} 2>&1 &
-    echo $! > ${APP_HOME}/${APP_NAME}-jar.lck
+    echo "java ${JAVA_FLAGS} -jar ${APP_JLIBR}/${JAVA_RMIBASE}" && return 0
+    #java ${JAVA_FLAGS} -jar ${APP_JLIBR}/${JAVA_RMIBASE} 2>&1 &
+    echo $! > ${APP_JTEMP}/${APP_NAME}-jar.lck
 
   fi
 
@@ -218,7 +238,7 @@ function jLoadJARProcess
 #
 function jUnloadJARProcess 
 {
-  lockfile="${APP_HOME}/${APP_NAME}-jar.lck"
+  lockfile="${APP_JTEMP}/${APP_NAME}-jar.lck"
   [ -f ${lockfile} ] && kill -9 $(cat ${lockfile}) && rm ${lockfile}
 
 }
@@ -231,14 +251,14 @@ function jLoadCLASSProcess
 
   echo "java ${JAVA_FLAGS} -cp ${CLASSPATH} ${JAVA_MAINCLASS} ${CMD}" 
   #java ${JAVA_FLAGS} -cp ${CLASSPATH} ${JAVA_MAINCLASS} ${CMD} 2>&1 &
-  echo $! > ${APP_HOME}/${APP_NAME}-cls.lck
+  echo $! > ${APP_JTEMP}/${APP_NAME}-cls.lck
 
 }
 
 #
 function jUnloadCLASSProcess 
 {
-  lockfile="${APP_HOME}/${APP_NAME}-cls.lck"
+  lockfile="${APP_JTEMP}/${APP_NAME}-cls.lck"
   [ -f ${lockfile} ] && kill -9 $(cat ${lockfile}) && rm ${lockfile}
 
 }

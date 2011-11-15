@@ -68,6 +68,8 @@ A propousal filesystem structure is:
     |   `-- utils.lib                   Some other utils functions
     |-- tmp                             Temporal directory
     |   `-- [some lock files]
+    |-- backup                          Directory of backups
+    |   `-- [some backup files]
     `-- vendor                          Library of SHTemplate
         |-- jCommons.lib
         |-- tCommons.lib
