@@ -1,202 +1,79 @@
-shTemplate
+SHTemplate
 ----------
 An Small Shell Template for start/stop simple projects
 
 
 ## Developed by
 
-Andres Aquino <aquino(at)hp.com>
+Andres Aquino <andres.aquino(at)gmail.com>
 
 
 ## Source Code
 
 [GitHub]       http://andresaquino.github.com/shtemplate
 
-[GoggleCode]   http://shtemplate.googlecode.com/svn/trunk/
+[GoogleCode]   http://shtemplate.googlecode.com/svn/trunk/
 
-[Bugtracker]   http://github.com/andresaquino/shtemplate/issues
+[Bugtracker]
 
 
 ## Overview
 
-Crear una plantilla para desarrollar aplicaciones que se ejecutan en shell, la
-necesidad  necesidad viene de homologar la manera en como se desarrollan este
-tipo de aplicaciones al tener diferentes grupos de trabajo; de esta manera, el
-implementar una plantilla nos permite contextualizar los diferentes archivos
-necesarios y las puestas en produccion deberan de ser (en teoria) mucho mas
-sencillas y ordenadas.
-
-A simple template for build shell applications, the purpose is standardize
-development, stablishing model of convention over configuration (like rails)
-meanwhile help transitions of development to production environments.
+Our objetive was to build a template to create and execute batch processes,
+with intention of homologate all manners of work or develop until then, as
+consequence of work with many differents point of view. When we saw the 
+facility with that a RoR (Ruby on Rails) application is build then we think
+"hey, really we need some similar here.." because until these moment we had
+been work with too many different structures and obviously, to many problems 
+and bugs to resolve.
 
 Do you want help us, send us your commits <aquino@hp.com>
 
 
 ## Structure
 
-    Directorio base
-        .
-        ├── LICENSE
-        ├── README
-        ├── ROADMAP
-        ├── VERSION
-        ├── backups                 # respaldos
-        ├── bin                     # binarios
-        │   ├── shtemplate.sh
-        │   ├── shtemplate.start
-        │   └── shtemplate.stop
-        ├── cfg                     # configuracion local
-        │   ├── java.env
-        │   ├── log4j.properties
-        │   ├── shtemplate.conf
-        │   └── shtemplate.key
-        ├── install.sh
-        ├── lib                     # bibliotecas / jars
-        │   ├── commons-collections.jar
-        │   └── log4j.jar
-        ├── logs                    # registros de la aplicacion
-        │   └── *.log
-        ├── manual                  # documentacion
-        │   └── shtemplate.pod
-        ├── tmp                     # archivos de bloqueo / temporales
-        ├── utils                   # esas funciones que van a desaparecer
-        │   ├── decryptMe.sh
-        │   ├── encryptMe.sh
-        │   ├── test.sh
-        │   └── utils.lib
-        └── vendor                  # bibliotecas necesarias para funcionar
-            ├── jCommons.lib
-            ├── java.env
-            ├── java.policy
-            ├── tCommons.lib
-            └── unix.profile   
-        .
-
-    Aplicacion
-        .
-        ├── backups 
-        │   └── *.bkp
-        ├── bin 
-        │   ├── myApplication.start -> 
-        │   │        ${HOME}/shtemplate/bin/shtemplate.start
-        │   ├── myApplication.stop  -> 
-        │   │        ${HOME}/shtemplate/bin/shtemplate.stop
-        │   └── myApplication.check ->
-        │            ${HOME}/shtemplate/bin/shtemplate.check
-        ├── cfg 
-        │   ├── appl.env
-        │   ├── java.env
-        │   └── log4j.properties
-        ├── lib
-        │   └── *.jar
-        ├── logs 
-        │   └── *.log
-        └── README
+A propousal filesystem structure is:
+    .
+    |-- LICENSE                         License of product
+    |-- README                          This document
+    |-- VERSION                         Version of product
+    |-- app
+    |   |-- [shell name].status         Status points to -> script/status
+    |   |-- [shell name].start          Start points to -> script/start
+    |   `-- [shell name].stop           Stop points to -> scripts/stop
+    |-- config
+    |   |-- java.properties             Java properties (base file)
+    |   |-- log4j.properties            Log4J properties (example)
+    |   |-- shtemplate.properties       SHTemplate properties (base file)
+    |   `-- shtemplate.key              SHTemplate RSA key file (base file)
+    |-- lib                             Some Java JAR files (base files)
+    |   |-- log4j-1.2.15.jar
+    |   `-- [base jar files]
+    |-- log                             Log files
+    |   |-- shtemplate.log
+    |   `-- [another log file]
+    |-- manual                          Manual files
+    |   |-- shtemplate.1
+    |   `-- shtemplate.pod
+    |-- script                          Script files
+    |   |-- sh-create                   Create a new structure
+    |   |-- sh-modify                   Modify a structure
+    |   |-- sh-delete                   Delete a structure
+    |   |-- sh-query                    Query parameters/structure
+    |   |-- shtemplate.status           Status               
+    |   |-- shtemplate.start            Start
+    |   |-- shtemplate.stop             Stop
+    |   |-- decryptMe.sh                Decrypt some data 
+    |   |-- encryptMe.sh                Encrypt some data
+    |   `-- utils.lib                   Some other utils functions
+    |-- tmp                             Temporal directory
+    |   `-- [some lock files]
+    `-- vendor                          Library of SHTemplate
+        |-- jCommons.lib
+        |-- tCommons.lib
+        |-- java.policy
+        `-- shtemplate.rc
 
 
-## Workflow
-
-Use a configuration file where 
-
-Usar un archivo de configuracion general donde se coloquen los parametros
-requeridos por la aplicacion. Este archivo puede referenciarse por una liga
-desde el home del usuario para poder ubicar los contextos de ejecucion.
-
-Examples
-
- - el directorio de ejecucion se encuentra en:
-      /opt/apps/batch/ShellTemplate
-
- - en el directorio tenemos un archivo con los parametros de configuracion en:
-      CompSvcBatchBC.rc
-      /opt/apps/batch/ShellTemplate/setEnvironment.rc
-
- - el contenido del archivo, es el siguiente:
-      AP_PATH=/opt/apps/batch/ShellTemplate
-      AP_FKEY=ShellTemplate.key
-      etc..
-
- - y referenciarlo de la siguiente manera:
-      ln -sf /opt/apps/batch/ShellTemplate/setEnvironment.rc $HOME/.shelltemplaterc
-
- - de tal manera que lo podriamos referenciar en algun otro shell de la sig manera:
-      ...
-      echo "Cargando configuracion"
-      . ${HOME}/.shelltemplaterc
-      ...
-
-
-## Configuration files 
-
-shtemplate.conf
-
-<pre>
-# CONF 
-# vim: set ts=2 sw=2 sts=2 et si ai syntax=sh: 
-
-# appexample.conf 
-# =
-# 
-# Andres Aquino <aquino(at)hp.com>
-# Hewlett Packard Company | EBS
-# 
-
-# Description  : java version to use, 
-# Required     : no, by default use java15
-APJVER="[ java14 | java15 | java16 ]"
-
-# Description  : how execute the application, in background (like a server) or not?
-# Required     : yes
-APTYPE="[ foreground | background ]"
-
-# Description  : language required by the application
-# Required     : no, by default C
-APLANG="[ default | Americas/Mexico ]"
-
-# Description  : Initial Size of memory required by java process
-# Required     : no, by default set to 32m
-APMINI="[ default | 32m, 64m, 128m, ... ]"
-
-# Description  : Maximum Size of memory required by java process
-# Required     : no, by default set to 32m
-APMMAX="[ default | 32m, 64m, 128m, ... ]"
-
-# Description  : Initial Permanent Size of memory required by java process
-# Required     : no, by default set to 16m
-APPINI="[ default | 32m, 64m, 128m, ... ]"
-
-# Description  : Maximum Permanent Size of memory required by java process
-# Required     : no, by default set to 16m
-APPMAX="[ default | 32m, 64m, 128m, ... ]"
-
-# Description  : Flag, is required a Memory Heapdump of java process?
-# Required     : no
-APFHDB="[ yes | no ]"
-
-# Description  : Flag, is required a Thread Heapdump of java process?
-# Required     : no
-APFTDB="[ yes | no ]"
-
-# Description  : Security Policy, necessary to grant access on all java process
-# Required     : no
-APFSPL="[ yes | no ]"
-
-# Description  : Java Classpath, build with all jar files founded in $APP/libs or require a strict load order
-# Required     : no
-APCLSS="[ default | libs/uno.jar:libs/dos.jar:libs/tres.jar ]"
-
-# Description  : 
-# Required     :
-APCMND="rmiregistry 10089"
-
-</pre>
-
-La idea de hacer este tipo de configuracion, es usar las rutas por defecto del
-sistema operativo (en este caso el $HOME del usuario) para poder cargar los
-parametros de las aplicaciones y evitar conflictos por realizar la ejecucion de
-las mismas al no encontrarse dentro de los directorios de ejecucion. De esta
-manera se puede ejecutar el shell desde cualquier ubicacion y estaremos seguros
-de que este se ejecutara acorde a nuestros parametros.
 
 # vim: set ts=4 sw=4 sts=4 et si ai tw=80 lbr syntax=markdown:

@@ -1,7 +1,7 @@
 #!/bin/sh 
 # vim: set filetype=sh ts=2 sw=2 sts=2 et si ai: 
 
-# java.env
+# java.rc
 # =
 #
 # Andres Aquino <aquino(at)hp.com>
@@ -9,31 +9,29 @@
 # 
 
 # Language
-JLANGUAJE="C"
+JAVA_LANGUAJE="C"
 
 # TimeZone
-JTIMEZONE="GMT"
+JAVA_TIMEZONE="GMT"
 
 # Memory (Initial Size)
-JMINITIAL="32M"
+JAVA_MEMINITIAL="32M"
 
 # Memory (Maximum Size)
-JMMAXIMUM="32M"
+JAVA_MEMMAXIMUM="32M"
 
 # Memory (Initial Permanent Size)
-JPINITIAL="64M"
+JAVA_PERMSIZEINITIAL="64M"
 
 # Memory (Maximum Permanent Size)
-JPMAXIMUM="128M"
+JAVA_PERMSIZEMAXIMUM="128M"
 
 # Security Policy
-JSEPOLICY="cfg/java.policy"
+JAVA_SECPOLICY="cfg/java.policy"
 
 # Java flags for JVM Execution
 JAVA_FLAGS= 
 
-# Indicated by developer...
-JP_RMI=
-JP_JAR=
-JP_CLS=
+# Java RMI Configuration (if exists)
+JAVA_RMI=
 

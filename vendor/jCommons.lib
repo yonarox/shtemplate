@@ -8,35 +8,6 @@
 # Hewlett-Packard Company | EBS
 # 
 
-# set Environment
-function jSetEnvironment 
-{
-  if [ -z "${APP_HOME}" ]
-  then
-    PrintOut "Please, set APP_HOME"
-    exit 1
-  fi
-
-  # load default parameters
-  if [ ! -f "${APP_HOME}/vendor/java.env" ]
-  then 
-    PrintOut "Please, set vendor/java.env"
-    exit 1
-  fi
-  . ${APP_HOME}/vendor/java.env
-
-  # load user app parameters
-  if [ ! -f "${APP_HOME}/cfg/appl.env" ]
-  then 
-    PrintOut "Please, set cfg/appl.env"
-    exit 1
-  fi
-  . ${APP_HOME}/cfg/appl.env
-
-  JAVA_FLAGS="-Dappname=${APP_NAME}"
-
-}
-
 # Heap Size of Memory
 # This setting controls the size of the Java heap.
 # Properly tuning this parameter reduces the overhead of garbage collection, 
@@ -109,6 +80,10 @@ function jSetTimeZone
   # ... and setting
   JAVA_FLAGS="${JAVA_FLAGS} -Duser.timezone=${TIMEZONE}"
 
+  # set language and code page
+  export LANG="${JAVA_LANGUAGE}"
+  export LC_ALL="${JAVA_LANGUAGE}"
+
 }
 
 # Security Policy of a JVM execution
@@ -134,11 +109,14 @@ function jSetSecurityPolicy
 # Build a CLASSPATH
 function jBuildClasspath 
 {
+  # 
+  local CLFILE=
+
   # Java Classes
   JAVA_CLASSPATH=
-  for classfile in ${APP_HOME}/lib/*.jar
+  for CLFILE in ${APP_HOME}/lib/*.jar
   do
-    JAVA_CLASSPATH="${classfile}:${JAVA_CLASSPATH}"
+    JAVA_CLASSPATH="${CLFILE}:${JAVA_CLASSPATH}"
   done
   
   # if receive an additional directory
@@ -146,6 +124,37 @@ function jBuildClasspath
 
   export CLASSPATH="`echo "${JAVA_CLASSPATH}:." | sed -e 's/::/:/g'`"
 
+}
+
+# 
+function jLoadProperties
+{
+  local PRFILE="${1}"
+
+  # load ${APPNAME} properties file
+  PRFILE="`basename ${PRFILE%.*}`"
+  PRFILE="${HOME}/.${PRFILE}rc"
+  [ ! -f ${PRFILE} ] && PrintOut "Error! No existe archivo ${PRFILE}" && exit 1
+  . ${PRFILE}
+  
+  # load main environment
+  LoadEnvironment
+}
+
+function jShowProperties
+{
+  PrintOut "${BLDYLW}${APP_NAME}"
+  PrintOut "${CRESET}-------------------------------------------------------------------"
+  PrintOut "${CRESET}  App Name    :${TXTYLW} ${APP_NAME}"
+  PrintOut "${CRESET}  App Home    :${TXTYLW} ${APP_HOME}"
+  PrintOut "${CRESET}  Language    :${TXTYLW} ${JAVA_LANGUAGE}"
+  PrintOut "${CRESET}  Timezone    :${TXTYLW} ${JAVA_TIMEZONE}"
+  PrintOut "${CRESET}  MemInitial  :${TXTYLW} ${JAVA_MEMINITIAL}"
+  PrintOut "${CRESET}  MemMaximum  :${TXTYLW} ${JAVA_MEMMAXIMUM}"
+  PrintOut "${CRESET}  PermInitial :${TXTYLW} ${JAVA_PERMSIZEINITIAL}"
+  PrintOut "${CRESET}  PermMaximum :${TXTYLW} ${JAVA_PERMSIZEMAXIMUM}"
+  PrintOut "${CRESET}  SecPolicy   :${TXTYLW} ${JAVA_SECPOLICY}"
+  PrintOut "${CRESET}  Classpath   :${TXTYLW} ${JAVA_CLASSPATH}"
 }
 
 #
