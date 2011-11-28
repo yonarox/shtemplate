@@ -1,11 +1,11 @@
 #!/bin/sh 
-# vim: set ts=2 sw=2 sts=2 si ai et: 
+# vim: set filetype=sh ts=2 sw=2 sts=2 et si ai: 
 
 # install.sh 
 # =
 #
 # Andres Aquino <aquino(at)hp.com>
-# Hewlett-Packard Company
+# Hewlett-Packard Company | EBS
 # 
 
 echo "[1] - Creating structure..."
