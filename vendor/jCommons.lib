@@ -128,18 +128,15 @@ function jBuildClasspath
 # 
 function jLoadProperties
 {
-  local PRFILE="${1}"
-
   # load main environment
   LoadEnvironment
 
-  # load ${APPNAME} properties file
-  PRFILE="${HOME}/.${PRFILE}rc"
-  [ ! -f ${PRFILE} ] && PrintOut "Error! No existe archivo ${PRFILE}" && exit 1
-  . ${PRFILE}
-
+  # already defined APP_HOME ?
+  [ -z "${APP_HOME}" ] && LogInfo "Application's Home still not defined" && exit 1
+  
   # define new or old structure
   APP_JHOME="${APP_HOME}"
+  APP_JABIN="${APP_JHOME}/bin"
   APP_JLIBR="${APP_JHOME}/lib"
   APP_JBCKP="${APP_JHOME}/backup"
   [ -d "${APP_JHOME}/cfg" ] && APP_JCONF="${APP_JHOME}/cfg" || APP_JCONF="${APP_JHOME}/config"
@@ -159,6 +156,7 @@ function jShowProperties
   PrintOut "${BLDRED}${APP_NAME}"
   PrintOut "${CRESET} | |- Name       :${TXTYLW} ${APP_NAME}"
   PrintOut "${CRESET} | |- Home       :${TXTYLW} ${APP_JHOME}"
+  PrintOut "${CRESET} | |- Binaries   :${TXTYLW} ${APP_JABIN}"
   PrintOut "${CRESET} | |- Library    :${TXTYLW} ${APP_JLIBR}"
   PrintOut "${CRESET} | |- Backup     :${TXTYLW} ${APP_JBCKP}"
   PrintOut "${CRESET} | |- Config     :${TXTYLW} ${APP_JCONF}"
@@ -185,20 +183,21 @@ function jLoadRMIProcess
   local RMIPORT=${2}
 
   export JAVA_RMI=
+  export JAVA_RMILOCK="${APP_JTEMP}/RMI-${APP_NAME}.pid"
 
   # undefined, use defaults
   [ -z "${RMIBASE}" ] && RMIBASE=${JAVA_RMIBASE}
   [ -z "${RMIPORT}" ] && RMIPORT=${JAVA_RMIPORT}
 
   # define flag
-  [ -f ${APP_JTEMP}/${APP_NAME}-rmi.lck ] && PrintOut "Some RMI process exists" && return 1
+  [ -f "${JAVA_RMILOCK}" ] && PrintOut "Some RMI process exists" && return 1
   if [ ! -f ${APP_JLIBR}/${RMIBASE} ]
   then
-    LogMessage "Any RMI CodeBase file exists, verify ${APP_JLIBR}/${RMIBASE}"
+    LogMessage "Any RMI CodeBase file exists, verify ${JAVA_RMILOCK}"
     return 1
   else
     echo "rmiregistry ${RMIPORT}" 
-    #rmiregistry ${RMIPORT} 2>&1 &
+    rmiregistry ${RMIPORT} 2>&1 &
     echo $! > ${APP_JTEMP}/${APP_NAME}-rmi.lck
     JAVA_RMI="file://${APP_JLIBR}/${RMIBASE}"
     export JAVA_RMIBASE="${RMIBASE}"

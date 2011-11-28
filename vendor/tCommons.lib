@@ -8,18 +8,12 @@
 # Hewlett-Packard Company | EBS
 # 
 
-# This is the user profile enviroment file
-# See bash_rc or bash_profile for more information.
-
 # set environment
 function LoadEnvironment
 {
-  # Behavior
-  # input mode
-  set -o vi
 
-  # permissions by default over new files/directories
-  umask 0007
+  # if we load a previous tCommons settings, then exit
+  [ -n "${U_LAND}" ] && LogInfo "Already loaded" && return 0
 
   # Predefined variables
   export U_LAND="`uname -s`"
@@ -86,6 +80,18 @@ function LoadEnvironment
   [ "${U_LAND}" != "HP-UX" ] && EDITOR=vim && LANG="en_US.UTF-8"
   [ "${U_LAND}" = "HP-UX" ] && FUNCTIONS="typeset"
 
+  # common alias
+  alias ls="ls -F"
+  alias ll="ls -l"
+  alias la="ll -a"
+  alias lt="la -t"
+  alias lr="lt -r"
+  alias pw="pwd"
+  alias defn="${FUNCTIONS}"
+  alias java16="javaenvironment java16"
+  alias java15="javaenvironment java15"
+  alias java14="javaenvironment java14"
+
   # loading a terminal or only a process
   stty 2> /dev/null | grep -q 'baud' 
   if [ $? -eq 0 ]
@@ -150,20 +156,6 @@ function LoadEnvironment
 
   fi
 
-  # Common alias
-  alias ls="ls -F"
-  alias ll="ls -l"
-  alias la="ll -a"
-  alias lt="la -t"
-  alias lr="lt -r"
-  alias pw="pwd"
-  alias java16="JavaEnvironment java16"
-  alias java15="JavaEnvironment java15"
-  alias java14="JavaEnvironment java14"
-  alias java13="JavaEnvironment java13"
-  alias version="ShowVersion"
-  alias defn="${FUNCTIONS}"
- 
 }
 
 # Prints a message 
@@ -318,6 +310,13 @@ function SetCommandStyle
   unset USERNAME
 }
 
+function GetCurrTime
+{
+  U_DATE="`date "+%Y%m%d"`"
+  U_HOUR="`date "+%H%M"`"
+  U_TIME="${U_DATE}${U_HOUR}"
+}
+
 # logger
 #LogInfo ()
 #LogError ()
@@ -351,6 +350,21 @@ function ShowVersion
   U_FILEVERSION=`openssl dgst -md5 ~/unix.profile | rev | cut -c-4 | rev`
   PrintOut "Profile ver.${U_FILEVERSION} (${U_LAND}) \n${U_WORK} \n\nDeveloped by \nAndres Aquino <aquino(at)hp.com>"
 }
+
+# Shows Information about this system
+function ShowInternals
+{
+  GetCurrTime
+  PrintOut "-"
+  PrintOut "${TXTRED}OpSystem  ${CRESET}: ${U_LAND}"
+  PrintOut "${TXTRED}Hostname  ${CRESET}: ${U_HOST}"
+  PrintOut "${TXTRED}CurrDate  ${CRESET}: ${U_DATE}"
+  PrintOut "${TXTRED}CurrHour  ${CRESET}: ${U_HOUR}"
+  PrintOut "${TXTRED}IpAddress ${CRESET}: ${U_ADDRESS}"
+  PrintOut "${TXTRED}PathApps  ${CRESET}: ${PATH}"
+
+}
+
 
 function SetWorkProfile 
 {
