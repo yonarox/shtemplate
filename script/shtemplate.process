@@ -1,0 +1,44 @@
+#!/bin/sh 
+# vim: set filetype=sh ts=2 sw=2 sts=2 et si ai: 
+
+# shtemplate.process
+# =
+#
+# Andres Aquino <aquino(at)hp.com>
+# Hewlett-Packard Company | EBS
+# 
+
+# Declare App Name
+APP_NAME=`basename ${0}`
+APP_NAME="${APP_NAME%.*}"
+U_DEBG=false
+
+# Load configuration
+. ${HOME}/.javarc
+. ${HOME}/.${APP_NAME}rc
+
+# Load Libraries
+. ${APP_JVNDR}/tCommons.lib
+. ${APP_JVNDR}/jCommons.lib
+
+jLoadProperties
+jShowProperties
+
+if [ -L "${APP_JABIN}/rmi.start" ]
+then
+  PrintOut "Yeah, load rmi process"
+fi
+
+if [ -L "${APP_JABIN}/server.start" ]
+then
+  PrintOut "Yeah, load server process"
+fi
+
+if [ -L "${APP_JABIN}/class.start" ]
+then
+  PrintOut "Yeah, load class process"
+fi
+
+
+
+
