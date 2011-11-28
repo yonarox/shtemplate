@@ -27,7 +27,7 @@ facility with that a RoR (Ruby on Rails) application is build then we think
 been work with too many different structures and obviously, to many problems 
 and bugs to resolve.
 
-Do you want help us, send us your commits <aquino@hp.com>
+Do you want help us, send us your commits <andres.aquino(at)gmail.com>
 
 
 ## Structure
@@ -37,17 +37,15 @@ A propousal filesystem structure is:
     |-- LICENSE                         License of product
     |-- README                          This document
     |-- VERSION                         Version of product
-    |-- app
-    |   |-- [shell name].status         Status points to -> script/status
-    |   |-- [shell name].start          Start points to -> script/start
-    |   `-- [shell name].stop           Stop points to -> scripts/stop
     |-- config
     |   |-- java.properties             Java properties (base file)
     |   |-- log4j.properties            Log4J properties (example)
+        |-- java.policy
     |   |-- shtemplate.properties       SHTemplate properties (base file)
     |   `-- shtemplate.key              SHTemplate RSA key file (base file)
     |-- lib                             Some Java JAR files (base files)
     |   |-- log4j-1.2.15.jar
+    |   |-- ...
     |   `-- [base jar files]
     |-- log                             Log files
     |   |-- shtemplate.log
@@ -55,25 +53,24 @@ A propousal filesystem structure is:
     |-- manual                          Manual files
     |   |-- shtemplate.1
     |   `-- shtemplate.pod
-    |-- script                          Script files
+    |-- script
+    |   |-- rmi.process                 Create a new structure
+    |   |-- server.process              Create a new structure
+    |   |-- classs.process              Create a new structure
     |   |-- sh-create                   Create a new structure
     |   |-- sh-modify                   Modify a structure
     |   |-- sh-delete                   Delete a structure
     |   |-- sh-query                    Query parameters/structure
-    |   |-- shtemplate.status           Status               
-    |   |-- shtemplate.start            Start
-    |   |-- shtemplate.stop             Stop
-    |   |-- decryptMe.sh                Decrypt some data 
-    |   |-- encryptMe.sh                Encrypt some data
+    |   |-- decrypt.sh                  Decrypt some data 
+    |   |-- encrypt.sh                  Encrypt some data
     |   `-- utils.lib                   Some other utils functions
     |-- tmp                             Temporal directory
-    |   `-- [some lock files]
+    |   `-- [ lock files]
     |-- backup                          Directory of backups
-    |   `-- [some backup files]
-    `-- vendor                          Library of SHTemplate
-        |-- jCommons.lib
-        |-- tCommons.lib
-        |-- java.policy
+    |   `-- [ backup files]
+    `-- vendor
+        |-- jCommons.lib                Java Common functions
+        |-- tCommons.lib                Terminal Common functions
         `-- shtemplate.rc
 
 
