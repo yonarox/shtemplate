@@ -12,9 +12,6 @@
 function LoadEnvironment
 {
 
-  # if we load a previous tCommons settings, then exit
-  [ -n "${U_LAND}" ] && LogInfo "Already loaded" && return 0
-
   # Predefined variables
   export U_LAND="`uname -s`"
   export U_HOST="`hostname | sed -e 's/\..*//g'`"
@@ -24,9 +21,6 @@ function LoadEnvironment
   export U_NAME="Andres Aquino"
   export U_MAIL="aquino(at)hp.com"
   export U_WORK="Hewlett-Packard Company | EBS"
-
-  # debug
-  ${U_DEBG} || export U_DEBG=true
 
   # Terminal 
   export U_TERM="TERM"
@@ -88,9 +82,9 @@ function LoadEnvironment
   alias lr="lt -r"
   alias pw="pwd"
   alias defn="${FUNCTIONS}"
-  alias java16="javaenvironment java16"
-  alias java15="javaenvironment java15"
-  alias java14="javaenvironment java14"
+  alias java16="JavaEnvironment java16"
+  alias java15="JavaEnvironment java15"
+  alias java14="JavaEnvironment java14"
 
   # loading a terminal or only a process
   stty 2> /dev/null | grep -q 'baud' 
@@ -201,7 +195,10 @@ function JavaEnvironment
   local JAVA_ENV="${1}"
 
   # if not exist or is empty, exit 
-  [ ! -d ${HOME}/paths.d ] || [ -z "$(ls -A ${HOME}/paths.d)" ] && return 0
+  if [ ! -d "${HOME}/paths.d" -o -z "$(ls -A ${HOME}/paths.d)" ]
+  then
+    return 0
+  fi
 
   # rebuild path and validate
   JAVA_PROF="${HOME}/paths.d/${JAVA_ENV}"
@@ -232,8 +229,8 @@ function JavaEnvironment
       [ -d ${JRE_HOME}  ] && PATH=${JRE_HOME}/${BINARIES}:${PATH}
       LogInfo "Adding new path: ${eachpath}/${BINARIES}"
 
-      JAVA_VERSION=`java -version 2>&1 | grep "version" | sed -e "s/\"//g;s/.*ion //g"`
-      LogInfo "Setting JAVA_HOME to ${eachpath}, Ver. ${JAVA_VERSION}"
+      export JVM_VERSION=`java -version 2>&1 | grep "version" | sed -e "s/\"//g;s/.*ion //g"`
+      LogInfo "Setting JAVA_HOME to ${eachpath}, Ver. ${JVM_VERSION}"
       
       # workaround hp-ux & java16
       [ ${U_LAND} = "HP-UX" ] && [ ${JAVA_ENV} = "java16" ] && SHLIB_PATH=${JAVA_HOME}/jre/lib/PA_RISC2.0/jli
@@ -248,8 +245,17 @@ function SetLocalPaths
 {
   local LPATH=
 
+  # System binaries
+  [ -d /bin ] && LPATH=/bin:${LPATH}
+  [ -d /sbin ] && LPATH=/sbin:${LPATH}
+  [ -d /usr/bin ] && LPATH=/usr/bin:${LPATH}
+  [ -d /usr/sbin ] && LPATH=/usr/sbin:${LPATH}
+ 
   # if not exist or is empty, exit 
-  [ ! -d ${HOME}/paths.d ] || [ -z "$(ls -A ${HOME}/paths.d)" ] && return 0
+  if [ ! -d "${HOME}/paths.d" -o -z "$(ls -A ${HOME}/paths.d)" ]
+  then
+    return 0
+  fi
 
   # lock for any file with path as contents
   for pathfile in ${HOME}/paths.d/[0-9][0-9]*
@@ -315,6 +321,16 @@ function GetCurrTime
   U_DATE="`date "+%Y%m%d"`"
   U_HOUR="`date "+%H%M"`"
   U_TIME="${U_DATE}${U_HOUR}"
+}
+
+function DebugOn
+{
+  export U_DEBG=true
+}
+
+function DebugOff
+{
+  export U_DEBG=false
 }
 
 # logger

@@ -11,7 +11,6 @@
 # Declare App Name
 APP_NAME=`basename ${0}`
 APP_NAME="${APP_NAME%.*}"
-U_DEBG=false
 
 # Load configuration
 . ${HOME}/.javarc
@@ -21,22 +20,28 @@ U_DEBG=false
 . ${APP_JVNDR}/tCommons.lib
 . ${APP_JVNDR}/jCommons.lib
 
+# Load App Process
+. ${APP_JSCRT}/rmi.process
+. ${APP_JSCRT}/server.process
+. ${APP_JSCRT}/class.process
+
+DebugOff
 jLoadProperties
 jShowProperties
 
 if [ -L "${APP_JABIN}/rmi.start" ]
 then
-  PrintOut "Yeah, load rmi process"
+  rmiVersion
 fi
 
 if [ -L "${APP_JABIN}/server.start" ]
 then
-  PrintOut "Yeah, load server process"
+  serverVersion
 fi
 
 if [ -L "${APP_JABIN}/class.start" ]
 then
-  PrintOut "Yeah, load class process"
+  classVersion
 fi
 
 

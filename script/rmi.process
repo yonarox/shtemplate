@@ -1,30 +1,46 @@
 #!/bin/sh 
 # vim: set filetype=sh ts=2 sw=2 sts=2 et si ai: 
 
-# rmi-process.sh
+# rmi.process
 # =
 #
 # Andres Aquino <aquino(at)hp.com>
 # Hewlett-Packard Company | EBS
 # 
 
-# Load an RMI Process
+function rmiVersion
+{
+  PrintOut "RMI Version 1.0"
+}
 
-# Load main configuration
-. ${HOME}/.javarc
+function rmiStart
+{
+  # initial RMI parameters 
+  local RMIBASE=${1}
+  local RMIPORT=${2}
 
-# Load common functions
-. ${APP_JVNDR}/tCommons.lib
-. ${APP_JVNDR}/jCommons.lib
+  export JAVA_RMI=
+  export JAVA_RMILOCK="${APP_JTEMP}/RMI-${APP_NAME}.pid"
 
-# Load properties of application
-jLoadProperties "${0%.st*}"
+  # undefined, use defaults
+  [ -z "${RMIBASE}" ] && RMIBASE=${JAVA_RMIBASE}
+  [ -z "${RMIPORT}" ] && RMIPORT=${JAVA_RMIPORT}
 
-# Load JAVA Environment
-JavaEnvironment "java16"
-PrintOut "JVM: ${JAVA_VERSION}"
+  # define flag
+  [ -f "${JAVA_RMILOCK}" ] && PrintOut "Some RMI process exists" && return 1
+  if [ ! -f ${APP_JLIBR}/${RMIBASE} ]
+  then
+    LogMessage "Any RMI CodeBase file exists, verify ${JAVA_RMILOCK}"
+    return 1
+  else
+    echo "rmiregistry ${RMIPORT}" 
+    rmiregistry ${RMIPORT} 2>&1 &
+    echo $! > ${APP_JTEMP}/${APP_NAME}-rmi.lck
+    JAVA_RMI="file://${APP_JLIBR}/${RMIBASE}"
+    export JAVA_RMIBASE="${RMIBASE}"
+    export JAVA_RMIPORT="${RMIPORT}"
 
-# Prepare to execute java app
-cd ${APP_JHOME}
-jLoadRMIProcess "BatchNOE.jar" "10010"
+  fi
+
+}
 

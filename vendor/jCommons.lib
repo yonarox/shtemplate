@@ -125,11 +125,19 @@ function jBuildClasspath
 
 }
 
+# TODO
+# function to add one by one each jar file
+#function jAddToClasspath
+#{}
+
 # 
 function jLoadProperties
 {
   # load main environment
   LoadEnvironment
+
+  # set java version
+  JavaEnvironment ${JAVA_VERSION}
 
   # already defined APP_HOME ?
   [ -z "${APP_HOME}" ] && LogInfo "Application's Home still not defined" && exit 1
@@ -163,7 +171,8 @@ function jShowProperties
   PrintOut "${CRESET} | |- Logs       :${TXTYLW} ${APP_JLOGS}"
   PrintOut "${CRESET} | |- Temporal   :${TXTYLW} ${APP_JTEMP}"
   PrintOut "${CRESET} | '- Vendor     :${TXTYLW} ${APP_JVNDR}"
-  PrintOut "${CRESET} |- JVM"
+  PrintOut "${CRESET} '- JVM"
+  PrintOut "${CRESET}  |- Version     :${TXTYLW} ${JVM_VERSION}"
   PrintOut "${CRESET}  |- Language    :${TXTYLW} ${JAVA_LANGUAGE}"
   PrintOut "${CRESET}  |- Timezone    :${TXTYLW} ${JAVA_TIMEZONE}"
   PrintOut "${CRESET}  |- MemInitial  :${TXTYLW} ${JAVA_MEMINITIAL}"
@@ -172,46 +181,7 @@ function jShowProperties
   PrintOut "${CRESET}  |- PermMaximum :${TXTYLW} ${JAVA_PERMSIZEMAXIMUM}"
   PrintOut "${CRESET}  |- SecPolicy   :${TXTYLW} ${JAVA_SECPOLICY}"
   PrintOut "${CRESET}  |- Java Flags  :${TXTYLW} ${JAVA_FLAGS}"
-  PrintOut "${CRESET}  '- Classpath   :${TXTYLW} ${JAVA_CLASSPATH}"
-}
-
-#
-function jLoadRMIProcess 
-{
-  # initial RMI parameters 
-  local RMIBASE=${1}
-  local RMIPORT=${2}
-
-  export JAVA_RMI=
-  export JAVA_RMILOCK="${APP_JTEMP}/RMI-${APP_NAME}.pid"
-
-  # undefined, use defaults
-  [ -z "${RMIBASE}" ] && RMIBASE=${JAVA_RMIBASE}
-  [ -z "${RMIPORT}" ] && RMIPORT=${JAVA_RMIPORT}
-
-  # define flag
-  [ -f "${JAVA_RMILOCK}" ] && PrintOut "Some RMI process exists" && return 1
-  if [ ! -f ${APP_JLIBR}/${RMIBASE} ]
-  then
-    LogMessage "Any RMI CodeBase file exists, verify ${JAVA_RMILOCK}"
-    return 1
-  else
-    echo "rmiregistry ${RMIPORT}" 
-    rmiregistry ${RMIPORT} 2>&1 &
-    echo $! > ${APP_JTEMP}/${APP_NAME}-rmi.lck
-    JAVA_RMI="file://${APP_JLIBR}/${RMIBASE}"
-    export JAVA_RMIBASE="${RMIBASE}"
-    export JAVA_RMIPORT="${RMIPORT}"
-
-  fi
-
-}
-
-#
-function jUnloadRMIProcess 
-{
-  lockfile="${APP_JTEMP}/${APP_NAME}-rmi.lck"
-  [ -f ${lockfile} ] && kill -9 $(cat ${lockfile}) && rm ${lockfile}
+  PrintOut "${CRESET}  '- Classpath   :${TXTYLW} ${JAVA_CLASSPATH}${CRESET}"
 }
 
 #

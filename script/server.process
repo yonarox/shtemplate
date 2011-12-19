@@ -1,28 +1,16 @@
 #!/bin/sh 
 # vim: set filetype=sh ts=2 sw=2 sts=2 et si ai: 
 
-# shtemplate.start
+# server.process
 # =
 #
 # Andres Aquino <aquino(at)hp.com>
 # Hewlett-Packard Company | EBS
 # 
 
-# Load main configuration
-. ${HOME}/.javarc
+function serverVersion
+{
+  PrintOut "SERVER Version 1.0"
+}
 
-# Load common functions
-. ${APP_JVNDR}/tCommons.lib
-. ${APP_JVNDR}/jCommons.lib
-
-# Load properties of application
-jLoadProperties "${0%.st*}"
-
-# Load JAVA Environment
-JavaEnvironment "java16"
-PrintOut "JVM: ${JAVA_VERSION}"
-
-# Prepare to execute java app
-cd ${APP_JHOME}
-jLoadRMIProcess "BatchNOE.jar" "10010"
 
