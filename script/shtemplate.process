@@ -13,12 +13,13 @@ APP_NAME=`basename ${0}`
 APP_NAME="${APP_NAME%.*}"
 
 # Load configuration
-. ${HOME}/.javarc
-. ${HOME}/.${APP_NAME}rc
+. ${HOME}/.apprc										# .mainrc@ -> ${HOME}/shtemplate/config/main.properties
+. ${HOME}/.javarc										# .javarc@ -> ${HOME}/shtemplate/config/java.properties
+. ${HOME}/.${APP_NAME}rc						# .batchnoerc@ -> ${HOME}/batch/BatchNOE/cfg/batchnoe.properties
 
-# Load Libraries
-. ${APP_JVNDR}/tCommons.lib
-. ${APP_JVNDR}/jCommons.lib
+# Load libraries
+. ${APP_JVNDR}/tCommons.lib					# ${HOME}/shtemplate/vendor/tCommons.lib
+. ${APP_JVNDR}/jCommons.lib					# ${HOME}/shtemplate/vendor/jCommons.lib
 
 # Load App Process
 . ${APP_JSCRT}/rmi.process

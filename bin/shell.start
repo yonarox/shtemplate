@@ -1,0 +1,39 @@
+#!/bin/sh -p -x
+# vim: set ts=2 sw=2 sts=2 et si ai: 
+
+# shell.start
+# -
+# 
+# Andres Aquino <aquino(at)hp.com>
+# HP | Enterprise Business Services
+#
+
+# Set Java App Name and execution path
+export APP_NAME="batchNOE"
+export APP_HOME="${HOME}/Downloads/HPWorks/BatchNOE"
+
+# libraries
+. ${APP_HOME}/vendor/unix-commons.lib
+. ${APP_HOME}/vendor/java-commons.lib
+
+java_set_environment
+java_set_timezone
+java_set_policy
+java_build_classpath "jars.list"
+java_set_version "java16"
+java_show_properties
+
+# Start RMI Process
+RMIPORT=`awk 'BEGIN{FS="="}/SERVER_RMI_PORT/{print $2}' ${APP_JCONF}/batch.properties`
+java_rmi_start "BatchNOE.jar" "${RMIPORT}"
+sleep 5
+
+# Start Server Process
+java_jar_start
+sleep 5
+
+# Sending signal
+java_class_start "start"
+sleep 5
+
+#
