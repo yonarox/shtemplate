@@ -40,8 +40,8 @@ java_set_version ()
   do
     # expand vars
     eachpath="$(eval echo ${eachpath} | sed -e 's/^#.*//g;s/ *//g;')"
-    [ ! -d ${eachpath} ] && log_info "This dir does not exist: ${eachpath}" && continue
     [ -z ${eachpath} ] && continue
+
     if [ -d ${eachpath}/${BINARIES} ] 
     then
       # FIX:
@@ -63,6 +63,20 @@ java_set_version ()
 
 }
 
+
+#
+# Profile Monitor
+# i.e. Introscope Wily
+java_add_monitor ()
+{
+	FLAG_MONITOR=${1}
+  [ -z "${FLAG_MONITOR}" ] && FLAG_MONITOR=${JAVA_MONITOR}
+
+  # ... and setting
+  JAVA_FLAGS="${JAVA_FLAGS} ${FLAG_MONITOR}"
+  log_info "Setting java monitor, ${FLAG_MONITOR}"
+
+}
 
 # Heap Size of Memory
 # This setting controls the size of the Java heap.
@@ -96,8 +110,8 @@ java_set_permsizeof_memory ()
   [ -z "${MAXIMUM}" ] && MAXIMUM=${JAVA_PERMSIZEMAXIMUM}
 
   # ... and setting
-  JAVA_FLAGS="${JAVA_FLAGS} -XX:PermSize=${INITIAL} -X:MaxPermSize=${MAXIMUM}"
-  log_info "Setting java flags, -XX:PermSize=${INITIAL} -X:MaxPermSize=${MAXIMUM}"
+  JAVA_FLAGS="${JAVA_FLAGS} -XX:PermSize=${INITIAL} -XX:MaxPermSize=${MAXIMUM}"
+  log_info "Setting java flags, -XX:PermSize=${INITIAL} -XX:MaxPermSize=${MAXIMUM}"
 
 }
 
@@ -120,8 +134,8 @@ java_set_garbagecollector ()
   GARBAGELOG="${APP_JLOGS}/${U_TIME}.gc"
   
   # ... and setting
-  JAVA_FLAGS="${JAVA_FLAGS} -XX:+DisableExplicitGC -XX:file=${GARBAGELOG}"
-  log_info "Setting java flags, -XX:+DisableExplicitGC -XX:file=${GARBAGELOG}"
+  JAVA_FLAGS="${JAVA_FLAGS} -XX:+DisableExplicitGC -Xverbosegc:file=${GARBAGELOG}"
+  log_info "Setting java flags, -XX:+DisableExplicitGC -Xverbosegc:file=${GARBAGELOG}"
 
 }
 
@@ -259,7 +273,6 @@ java_set_environment ()
   # load user app parameters
 	[ -d "${APP_HOME}/cfg" ] && APP_JCONF="${APP_HOME}/cfg"
 	[ -d "${APP_HOME}/conf" ] && APP_JCONF="${APP_HOME}/conf"
-	[ -d "${APP_HOME}/config" ] && APP_JCONF="${APP_HOME}/config"
   if [ ! -f "${APP_JCONF}/appl.env" ]
   then 
     log_error "Please, set ${APP_JCONF}/appl.env"
@@ -354,18 +367,18 @@ java_jar_start ()
 	# if JAVA_RMI is set, then..
   if [ "${JAVA_RMI}" ]
   then
-    log_info "JAVA Command: java ${JAVA_FLAGS} -Djava.rmi.server.codebase=${JAVA_RMI} -jar ${APP_JLIBR}/${JAVA_RMIBASE}" 
+    log_info "JAVA Command: java -cp ${CLASSPATH} -Djava.rmi.server.codebase=${JAVA_RMI} ${JAVA_FLAGS} ${JAVA_SERVERCLASS}" 
 		if ${APP_EXECUTE}
 		then
-			java ${JAVA_FLAGS} -Djava.rmi.server.codebase=${JAVA_RMI} -jar ${APP_JLIBR}/${JAVA_RMIBASE} 2>&1 &
+			java -cp ${CLASSPATH} -Djava.rmi.server.codebase=${JAVA_RMI} ${JAVA_FLAGS} ${JAVA_SERVERCLASS} 2>&1 &
 			echo $! > ${APP_JPRUN}/${APP_NAME}-jar.lck
 		fi
 
   else
-    log_info "JAVA Command: java ${JAVA_FLAGS} -jar ${APP_JLIBR}/${JAVA_RMIBASE}" 
+    log_info "JAVA Command: java -cp ${CLASSPATH} ${JAVA_FLAGS} ${JAVA_SERVERCLASS}" 
 		if ${APP_EXECUTE}
 		then
-			java ${JAVA_FLAGS} -jar ${APP_JLIBR}/${JAVA_RMIBASE} 2>&1 &
+			java -cp ${CLASSPATH} ${JAVA_FLAGS} ${JAVA_SERVERCLASS} 2>&1 &
 			echo $! > ${APP_JPRUN}/${APP_NAME}-jar.lck
 		fi
 

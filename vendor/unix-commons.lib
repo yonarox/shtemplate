@@ -176,12 +176,12 @@ set_local_paths ()
     do
       # get one line (path) and verify: is this a directory? 
       eachpath="$(eval echo ${eachpath} | sed -e 's/^#.*//g;s/ *//g;')"
-      [ ! -d ${eachpath} ] && break 
-      [ -z ${eachpath} ] && break 
-      log_message "Adding dir: ${eachpath}"
+      [ -z ${eachpath} ] && continue
+      [ ! -d ${eachpath} ] && continue
  
       isValid=true
       LPATH=${eachpath}:${LPATH}
+      log_message "Adding dir: ${eachpath}"
     done
     ${isValid} && log_info "Loading paths ${bname}"
   done

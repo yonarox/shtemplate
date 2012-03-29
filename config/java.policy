@@ -1,12 +1,4 @@
-// CONF
-// vim: set filetype=java ts=2 sw=2 sts=2 et si ai: 
-
-// java.policy
-// =
-//
-
 grant {
-  // Allow everything for now
-  permission java.security.AllPermission;
+	// Allow everything for now
+	permission java.security.AllPermission;
 };
-

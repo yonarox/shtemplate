@@ -9,8 +9,8 @@
 #
 
 # Set Java App Name and execution path
-export APP_NAME="batchNOE"
-export APP_HOME="${HOME}/Downloads/HPWorks/BatchNOE"
+export APP_NAME="Batch"
+export APP_HOME="${HOME}/Batch"
 
 # libraries
 . ${APP_HOME}/vendor/unix-commons.lib
@@ -23,11 +23,6 @@ java_build_classpath "jars.list"
 java_set_version "java16"
 java_show_properties
 
-# Start RMI Process
-RMIPORT=`awk 'BEGIN{FS="="}/SERVER_RMI_PORT/{print $2}' ${APP_JCONF}/batch.properties`
-java_rmi_start "BatchNOE.jar" "${RMIPORT}"
-sleep 5
-
 # Start Server Process
 java_jar_start
 sleep 5
@@ -36,4 +31,3 @@ sleep 5
 java_class_start "start"
 sleep 5
 
-#

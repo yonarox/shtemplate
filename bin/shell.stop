@@ -9,8 +9,8 @@
 #
 
 # Set Java App Name and execution path
-export APP_NAME="batchNOE"
-export APP_HOME="${HOME}/Downloads/HPWorks/BatchNOE"
+export APP_NAME="Batch"
+export APP_HOME="${HOME}/Batch"
 
 # libraries
 . ${APP_HOME}/vendor/unix-commons.lib
@@ -30,7 +30,4 @@ sleep 5
 # Server Process
 java_jar_stop
 sleep 5
-
-# Start RMI Process
-java_rmi_stop
 
