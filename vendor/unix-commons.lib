@@ -210,12 +210,10 @@ set_inputcommand_style ()
     # if you're a developer, set your git profile (yes...)
     if [ -s ~/git.profile ]
     then
-      export PS1="\e]1;${U_ADDRESS}\a\e]2;${U_ADDRESS}:${U_HOST}\a\
-                  \n\[${BLDWHT}\][ \[${BLDYLW}\]${U_ADDRESS}\[${BLDWHT}\] | \[${CRESET}\]${U_HOST}\[${BLDWHT}\] ]\[${BLDGRN}\]\$(__git_ps1 '(%s)')\[${CRESET}\] \w \
+      export PS1="\n\[${BLDWHT}\][ \[${BLDYLW}\]${U_ADDRESS}\[${BLDWHT}\] | \[${CRESET}\]${U_HOST}\[${BLDWHT}\] ]\[${BLDGRN}\]\$(__git_ps1 '(%s)')\[${CRESET}\] \w \
                   \n\[${CRESET}\]${USER} \$ "
     else
-      export PS1="\e]1;${U_ADDRESS}\a\e]2;${U_ADDRESS}:${U_HOST}\a\
-                  \n\[${BLDWHT}\][ \[${BLDYLW}\]${U_ADDRESS}\[${BLDWHT}\] | \[${CRESET}\]${U_HOST}\[${BLDWHT}\] ]\[${CRESET}\] \w \
+      export PS1="\n\[${BLDWHT}\][ \[${BLDYLW}\]${U_ADDRESS}\[${BLDWHT}\] | \[${CRESET}\]${U_HOST}\[${BLDWHT}\] ]\[${CRESET}\] \w \
                   \n\[${CRESET}\]${USER} \$ "
     fi
   fi

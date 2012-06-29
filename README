@@ -17,11 +17,11 @@ Roberto Gomez <carlos.realtime(at)gmail.com>
 
 ## Overview
 
-Our objetive was to build a template to create and execute batch processes,
+Our objetive was to build a template to build and execute batch processes,
 with intention of homologate all manners of work or develop until then, as
 consequence of work with many differents point of view. When we saw the 
 facility with that a RoR (Ruby on Rails) application is build then we think
-"hey, really we need some similar here.." because until these moment we had
+"hey, we need some similar here.." because until these moment we had
 been work with too many different structures and obviously, to many problems 
 and bugs to resolve.
 
