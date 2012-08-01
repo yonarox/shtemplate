@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#/bin/sh -p -x
+# vim: set ts=2 sw=2 sts=2 et si ai ft=sh: 
+
+# Copyright (c) 2012, Andres Aquino <andres.aquino(at)gmail.com>
+# This file is licensed under the BSD License version 3 or later. 
+# See the LICENSE file.
+
+# Set Java App Name and execution path
+export APP_NAME="iimon"
+export APP_HOME="${HOME}/iimon"
+
+# libraries
+. ${APP_HOME}/lib/unix-commons.lib
+. ${APP_HOME}/lib/jvm-commons.lib
+
+java_set_environment
+java_set_properties
+java_build_classpath "jarfiles"
+java_add_monitor
+java_show_properties
+

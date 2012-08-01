@@ -8,11 +8,10 @@ An Small Shell Template for start/stop simple projects
 Andres Aquino <andres.aquino(at)gmail.com>
 Roberto Gomez <carlos.realtime(at)gmail.com>
 
+
 ## Source Code
 
 [GitHub]       http://andresaquino.github.com/shtemplate
-
-[GoogleCode]   http://shtemplate.googlecode.com/svn/trunk/
 
 
 ## Overview
@@ -26,51 +25,6 @@ been work with too many different structures and obviously, to many problems
 and bugs to resolve.
 
 Do you want help us, send us your commits <andres.aquino(at)gmail.com>
-
-
-## Structure
-
-A propousal filesystem structure is:
-    .
-    |-- LICENSE                         License of product
-    |-- README                          This document
-    |-- VERSION                         Version of product
-    |-- config
-    |   |-- java.properties             Java properties (base file)
-    |   |-- log4j.properties            Log4J properties (example)
-        |-- java.policy
-    |   |-- shtemplate.properties       SHTemplate properties (base file)
-    |   `-- shtemplate.key              SHTemplate RSA key file (base file)
-    |-- lib                             Some Java JAR files (base files)
-    |   |-- log4j-1.2.15.jar
-    |   |-- ...
-    |   `-- [base jar files]
-    |-- log                             Log files
-    |   |-- shtemplate.log
-    |   `-- [another log file]
-    |-- manual                          Manual files
-    |   |-- shtemplate.1
-    |   `-- shtemplate.pod
-    |-- script
-    |   |-- rmi.process                 Create a new structure
-    |   |-- server.process              Create a new structure
-    |   |-- classs.process              Create a new structure
-    |   |-- sh-create                   Create a new structure
-    |   |-- sh-modify                   Modify a structure
-    |   |-- sh-delete                   Delete a structure
-    |   |-- sh-query                    Query parameters/structure
-    |   |-- decrypt.sh                  Decrypt some data 
-    |   |-- encrypt.sh                  Encrypt some data
-    |   `-- utils.lib                   Some other utils functions
-    |-- tmp                             Temporal directory
-    |   `-- [ lock files]
-    |-- backup                          Directory of backups
-    |   `-- [ backup files]
-    `-- vendor
-        |-- jCommons.lib                Java Common functions
-        |-- tCommons.lib                Terminal Common functions
-        `-- shtemplate.rc
-
 
 
 # vim: set ts=4 sw=4 sts=4 et si ai tw=80 lbr syntax=markdown:
