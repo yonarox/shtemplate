@@ -1,13 +1,8 @@
-#!/bin/sh 
-# vim:ts=2:sw=2:sts=2:et:si:ai:ft=sh: 
+# vim: set filetype=sh ts=2 sw=2 sts=2 et si ai ft=sh: 
 
-# unix-commons.lib
-# -
-#
-# Andres Aquino <andres.aquino(at)gmail.com>
-# SL | StrategyLabs!
-# 
-
+# Copyright (c) 2012, Andres Aquino <andres.aquino(at)gmail.com>
+# This file is licensed under the BSD License version 3 or later. 
+# See the LICENSE file.
 
 # set environment
 load_environment ()
@@ -28,13 +23,13 @@ load_environment ()
   SEQESCAPE="\033"
   FUNCTIONS="declare"
 
-	# if DEBUG flag is not set
-	${U_DEBG} || U_DEBG=true
+  # if DEBUG flag is not set
+  ${U_DEBG} || U_DEBG=true
 
-	# specific setup for Linux|SunOS|OS X
+  # specific setup for Linux|SunOS|OS X
   [ "${U_LAND}" = "Linux" -o "${U_LAND}" = "SunOS" ] && SEQESCAPE="\e" 
-	
-	# specific setup for HP UX
+  
+  # specific setup for HP UX
   if [ "${U_LAND}" = "HP-UX" ]
   then
     # input mode
@@ -123,7 +118,7 @@ puts ()
     ;;
       
     "Linux"|"Darwin"|"SunOS")
-      echo -e -n "${message} \n"
+      echo -n -e "${message} \n"
     ;;
     
     *)
@@ -142,6 +137,8 @@ load_profile ()
     . ${U_PROFILE} > /dev/null 2>&1
     U_PROFILE=`basename ${U_PROFILE}`
     log_info "Loading profile ${U_PROFILE}"
+  else
+    return 5
   fi
 
 }
@@ -201,7 +198,6 @@ set_local_paths ()
 # Sets PS1 and PS2 using an _eye candy_ cmd line, if you're using Git it shows branch name
 set_inputcommand_style ()
 {
-
   [ "${U_TERM}" = "TERM" ] && return 0
   if [ "${U_LAND}" = "HP-UX" ]
   then
@@ -210,12 +206,10 @@ set_inputcommand_style ()
     # if you're a developer, set your git profile (yes...)
     if [ -s ~/git.profile ]
     then
-      export PS1="\e]1;${U_ADDRESS}\a\e]2;${U_ADDRESS}:${U_HOST}\a\
-                  \n\[${BLDWHT}\][ \[${BLDYLW}\]${U_ADDRESS}\[${BLDWHT}\] | \[${CRESET}\]${U_HOST}\[${BLDWHT}\] ]\[${BLDGRN}\]\$(__git_ps1 '(%s)')\[${CRESET}\] \w \
+      export PS1="\n\[${BLDWHT}\][ \[${BLDYLW}\]${U_ADDRESS}\[${BLDWHT}\] | \[${CRESET}\]${U_HOST}\[${BLDWHT}\] ]\[${BLDGRN}\]\$(__git_ps1 '(%s)')\[${CRESET}\] \w \
                   \n\[${CRESET}\]${USER} \$ "
     else
-      export PS1="\e]1;${U_ADDRESS}\a\e]2;${U_ADDRESS}:${U_HOST}\a\
-                  \n\[${BLDWHT}\][ \[${BLDYLW}\]${U_ADDRESS}\[${BLDWHT}\] | \[${CRESET}\]${U_HOST}\[${BLDWHT}\] ]\[${CRESET}\] \w \
+      export PS1="\n\[${BLDWHT}\][ \[${BLDYLW}\]${U_ADDRESS}\[${BLDWHT}\] | \[${CRESET}\]${U_HOST}\[${BLDWHT}\] ]\[${CRESET}\] \w \
                   \n\[${CRESET}\]${USER} \$ "
     fi
   fi
@@ -223,8 +217,8 @@ set_inputcommand_style ()
   unset USERNAME
 }
 
-# function
-GetCurrTime ()
+# update current time
+current_time ()
 {
   U_DATE="`date "+%Y%m%d"`"
   U_HOUR="`date "+%H%M"`"
@@ -262,13 +256,13 @@ log_message ()
 show_version ()
 {
   U_FILEVERSION=`openssl dgst -md5 ~/unix.profile | rev | cut -c-4 | rev`
-  puts "Profile ver.${U_FILEVERSION} (${U_LAND}) \n${U_WORK} \n\nDeveloped by \nAndres Aquino <aquino(at)hp.com>"
+  puts "Profile ver.${U_FILEVERSION} (${U_LAND}) \n${U_WORK} \n\nDeveloped by \nAndres Aquino <andres.aquino(at)gmail.com>"
 }
 
 # Shows Information about this system
 show_internals ()
 {
-  GetCurrTime
+  current_time
   puts "-"
   puts "${TXTRED}OpSystem  ${CRESET}: ${U_LAND}"
   puts "${TXTRED}Hostname  ${CRESET}: ${U_HOST}"
