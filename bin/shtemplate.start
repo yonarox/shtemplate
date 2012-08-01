@@ -1,6 +1,4 @@
-#!/bin/bash
-
-#/bin/sh -p -x
+#!/bin/sh 
 # vim: set ts=2 sw=2 sts=2 et si ai ft=sh: 
 
 # Copyright (c) 2012, Andres Aquino <andres.aquino(at)gmail.com>
@@ -8,7 +6,7 @@
 # See the LICENSE file.
 
 # Set Java App Name and execution path
-export APP_NAME="iimon"
+export APP_NAME="shtemplate"
 export APP_HOME="${HOME}/iimon"
 
 # libraries
@@ -17,7 +15,7 @@ export APP_HOME="${HOME}/iimon"
 
 java_set_environment
 java_set_properties
-java_build_classpath "jarfiles"
+java_build_classpath "jar.files"
 java_add_monitor
 java_show_properties
 
