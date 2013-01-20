@@ -1,0 +1,12 @@
+// JAVA POLICY 
+// vim: set ts=2 sw=2 sts=2 et si ai: 
+
+// Copyright (c), Andres Aquino <andres.aquino(at)gmail.com>
+// This file is licensed under the BSD License version 3 or later. 
+// See the LICENSE file.
+
+grant {
+  // Allow everything from now
+  permission java.security.AllPermission;
+};
+

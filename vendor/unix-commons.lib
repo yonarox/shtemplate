@@ -1,0 +1,566 @@
+# SH
+# vim: set ts=2 sw=2 sts=2 et si ai ft=sh: 
+
+# Copyright (c) 2012, Andres Aquino <andres.aquino(at)gmail.com>
+# This file is licensed under the BSD License version 3 or later. 
+# See the LICENSE file.
+
+#
+# term definition
+term_definition ()
+{
+  # specific setup for Linux
+  if [ "${U_LAND}" = "Linux" ]
+  then
+    export LC_ALL="en_US.UTF-8"
+    export LANG="en_US.UTF-8"
+    FUNCTIONS="declare"
+    SEQESCAPE="\033"
+    U_NETDEVICE="eth"
+  fi
+
+  # specific setup for SunOS
+  if [ "${U_LAND}" = "SunOS" ]
+  then
+    export LC_ALL="en_US.UTF-8"
+    export LANG="en_US.UTF-8"
+    FUNCTIONS="declare"
+    SEQESCAPE="\e" 
+    U_NETDEVICE="nxge"
+    COLORS=""
+  fi
+
+  # specific setup for OS X
+  if [ "${U_LAND}" = "Darwin" ]
+  then
+    export LC_ALL="en_US.UTF-8"
+    export LANG="en_US.UTF-8"
+    FUNCTIONS="declare"
+    SEQESCAPE="\033"
+    U_NETDEVICE="en"
+    COLORS=""
+  fi
+
+  # specific setup for HP UX
+  if [ "${U_LAND}" = "HP-UX" ]
+  then
+    FUNCTIONS="typeset"
+    SEQESCAPE="\033"
+    U_NETDEVICE="lan"
+    COLORS=""
+  fi
+
+  # .. and for each device, test and found active interface
+  for NDEV in 0 1 2 3 4
+  do
+    DEV="${U_NETDEVICE}${NDEV}"
+    ADDRESS="$(ifconfig ${DEV} 2> /dev/null| awk '/inet [addr:]*/ {print $2}' | sed -e 's/.*://g')"
+    [ -n "${ADDRESS}" ] && break
+  done
+  U_NETDEVICE=${DEV}
+
+  # sweet lo0, sweet localhost 
+  [ -z "${ADDRESS}" ] && ADDRESS="127.0.0.1"
+  U_IPADDRESS=${ADDRESS}
+
+  # loading a terminal or only a process
+  if [ ${U_TERM} = "CONSOLE" ]
+  then
+    stty erase "^?" > /dev/null 2>&1
+    stty intr "^C" > /dev/null 2>&1
+    stty kill "^U" > /dev/null 2>&1
+    stty stop "^S" > /dev/null 2>&1
+    stty susp "^Z" > /dev/null 2>&1
+    stty werase "^W" > /dev/null 2>&1
+
+    # command line _eye candy_
+    CRESET="${SEQESCAPE}[0m"    # Text Reset
+    TXTBLK="${SEQESCAPE}[0;30m" # Black - Regular
+    TXTRED="${SEQESCAPE}[0;31m" # Red
+    TXTGRN="${SEQESCAPE}[0;32m" # Green
+    TXTYLW="${SEQESCAPE}[0;33m" # Yellow
+    TXTBLU="${SEQESCAPE}[0;34m" # Blue
+    TXTPUR="${SEQESCAPE}[0;35m" # Purple
+    TXTCYN="${SEQESCAPE}[0;36m" # Cyan
+    TXTWHT="${SEQESCAPE}[0;37m" # White
+    BLDBLK="${SEQESCAPE}[1;30m" # Black - Bold
+    BLDRED="${SEQESCAPE}[1;31m" # Red
+    BLDGRN="${SEQESCAPE}[1;32m" # Green
+    BLDYLW="${SEQESCAPE}[1;33m" # Yellow
+    BLDBLU="${SEQESCAPE}[1;34m" # Blue
+    BLDPUR="${SEQESCAPE}[1;35m" # Purple
+    BLDCYN="${SEQESCAPE}[1;36m" # Cyan
+    BLDWHT="${SEQESCAPE}[1;37m" # White
+    UNKBLK="${SEQESCAPE}[4;30m" # Black - Underline
+    UNDRED="${SEQESCAPE}[4;31m" # Red
+    UNDGRN="${SEQESCAPE}[4;32m" # Green
+    UNDYLW="${SEQESCAPE}[4;33m" # Yellow
+    UNDBLU="${SEQESCAPE}[4;34m" # Blue
+    UNDPUR="${SEQESCAPE}[4;35m" # Purple
+    UNDCYN="${SEQESCAPE}[4;36m" # Cyan
+    UNDWHT="${SEQESCAPE}[4;37m" # White
+    BAKBLK="${SEQESCAPE}[40m"   # Black - Background
+    BAKRED="${SEQESCAPE}[41m"   # Red
+    BAKGRN="${SEQESCAPE}[42m"   # Green
+    BAKYLW="${SEQESCAPE}[43m"   # Yellow
+    BAKBLU="${SEQESCAPE}[44m"   # Blue
+    BAKPUR="${SEQESCAPE}[45m"   # Purple
+    BAKCYN="${SEQESCAPE}[46m"   # Cyan
+    BAKWHT="${SEQESCAPE}[47m"   # White
+
+  else
+    # command line _eye candy_
+    CRESET="${SEQESCAPE}[0m"    # Text Reset
+    TXTBLK="${SEQESCAPE}[0;30m" # Black - Regular
+    TXTRED="" # Red
+    TXTGRN="" # Green
+    TXTYLW="" # Yellow
+    TXTBLU="" # Blue
+    TXTPUR="" # Purple
+    TXTCYN="" # Cyan
+    TXTWHT="" # White
+
+  fi
+
+}
+
+#
+# set environment
+load_environment ()
+{
+  # System binaries
+  [ -d /bin ] && PATH=/bin:${PATH}
+  [ -d /sbin ] && PATH=/sbin:${PATH}
+  [ -d /usr/bin ] && PATH=/usr/bin:${PATH}
+  [ -d /usr/sbin ] && PATH=/usr/sbin:${PATH}
+  [ -d /usr/sfw/bin ] && PATH=/usr/sfw/bin:${PATH}
+ 
+  # first state and set time
+  export U_DEBG=false
+  get_current_time
+
+  # save first state of PATH
+  if [ ${#U_PATH} -eq 0 ]
+  then
+    echo "${PATH}" > ${HOME}/.pathrc
+  fi
+
+  # Predefined profile variables
+  export PATH="$(cat ${HOME}/.pathrc)"
+  export U_LAND="$(uname -s)"
+  export U_HOST="$(hostname | sed -e 's/\..*//g')"
+  export U_DATE="$(date '+%Y%m%d')"
+  export U_HOUR="$(date '+%H%M')"
+  export U_TIME="${U_DATE}${U_HOUR}"
+  export U_NAME="Andres Aquino"
+  export U_MAIL="aquino(at)hp.com"
+  export U_WORK="HP | Enterprise Business Services"
+  export U_PATH="${PATH}"
+  export U_NETDEVICE="eth"
+  export U_IPADDRESS="127.0.0.1"
+  export U_LOGFILE="${HOME}/profile.log"
+  export U_BSCS_PROFILE="${HOME}/bscswp8.profile"
+  export U_GIT_PROFILE="${HOME}/git.profile"
+  export U_HOST_PROFILE="${HOME}/${U_HOST}.profile"
+  export U_FILEVERSION=""
+
+  # history file and manuals
+  export HISTSIZE=1500
+  export HISTCONTROL=ignoredups
+  export MANPATH="${HOME}/manuals:${MANPATH}"
+
+  # Terminal settings by SO
+  export LANG="C"
+  export HOSTNAME="$(hostname)"
+  export TERM="xterm"
+  export CLICOLOR=1
+  export LSCOLORS="DxxxcxdxBxegedabagacad"
+  export LS_COLORS="fi=00:di=01;33:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;32:*.tar=01;31:*.tgz=01;31:*.taz=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.gz=01;31:*.bz2=01;31:*.rpm=01;31:*.jar=01;31:"
+  export COLORS="--color"
+ 
+  # setting locale  
+  SEQESCAPE="\033"
+  FUNCTIONS="typeset"
+
+  # input mode
+  set -o vi
+  umask 0077
+
+  # term definition
+  term_definition
+
+  # common alias
+  alias ls="ls -F ${COLORS}"
+  alias ll="ls -l"
+  alias la="ll -a"
+  alias lt="la -t"
+  alias lr="lt -r"
+  alias pw="pwd"
+  alias rev="perl -lne 'print scalar reverse'"
+  alias defn="${FUNCTIONS}"
+  alias lprofile="load_profile"
+  alias version="show_version"
+  alias java16="java_set_version java16"
+  alias java15="java_set_version java15"
+  alias java14="java_set_version java14"
+
+  [ -r ${HOME}/logo.info ] && [ ${U_TERM} = "CONSOLE" ] && cat ${HOME}/logo.info && echo "-"
+  log_message "Setting local environment"
+  U_FILEVERSION="$(openssl dgst -md5 ${HOME}/unix.profile | rev | cut -c-4 | rev)"
+  load_profile "${HOME}/host.info"
+  set_local_paths
+
+}
+
+
+#
+# Prints a message 
+puts ()
+{
+  LMESSAGE="${1}"
+
+  case "${U_LAND}" in
+    "HP-UX")
+      echo "${LMESSAGE}"
+    ;;
+      
+    "Linux"|"Darwin"|"SunOS")
+      echo -e -n "${LMESSAGE} \n"
+    ;;
+    
+    *)
+      ${_echo} "${LMESSAGE} "
+    ;;
+  esac
+
+}
+
+
+#
+# load especific variables from a file
+load_profile ()
+{
+  U_PROFILE=${1}
+  if [ -s ${U_PROFILE} ]
+  then
+    . ${U_PROFILE} > /dev/null 2>&1
+    U_PROFILE="$(basename ${U_PROFILE})"
+    log_info "Loading profile ${U_PROFILE}"
+  fi
+
+}
+
+#
+# Validate freshness of a single file
+has_changes ()
+{
+  SFILE=${1}
+  
+  # md5 calculate per each file (fast load)
+  [ ! -f "${SFILE}.md5" ] && openssl dgst -md5 "${SFILE}" > "${SFILE}.md5"
+  MD5DIGEST="$(openssl dgst -md5 ${SFILE} | sed -e "s/.*= //g")"
+  MD5BACKUP="$(cat ${SFILE}.md5 | sed -e "s/.*= //g")"
+
+  # has changes?
+  if [ "${MD5DIGEST}" = "${MD5BACKUP}" ]
+  then
+    return 1
+  else
+    return 0
+  fi
+
+  
+}
+
+#
+# Define a execution unix path reading each file in Paths.d
+set_local_paths ()
+{
+  LPATH=
+
+  # System binaries
+  [ -d /bin ] && LPATH=/bin:${LPATH}
+  [ -d /sbin ] && LPATH=/sbin:${LPATH}
+  [ -d /usr/bin ] && LPATH=/usr/bin:${LPATH}
+  [ -d /usr/sbin ] && LPATH=/usr/sbin:${LPATH}
+  [ -d /usr/sfw/bin ] && PATH=/usr/sfw/bin:${PATH}
+ 
+  # if not exist or is empty, exit 
+  [ ! -d ${HOME}/paths.d ] || [ -z "$(ls -A ${HOME}/paths.d)" ] && return 0
+
+  # load cache path
+  DPATH=${HOME}/paths.d/${U_DATE}.path
+  if [ -f ${DPATH} ]
+  then
+    LPATH="$(cat ${DPATH})"
+    BASENAME="$(basename ${DPATH})"
+    log_message "Fast upload path from ${BASENAME}"
+  else
+    # lock for any file with path as contents
+    for PATHFILE in ${HOME}/paths.d/[0-9][0-9].*
+    do
+      BASENAME="$(basename ${PATHFILE})"
+
+      # empty file
+      [ ! -s ${PATHFILE} ] && log_error "Empty file ${PATHFILE}" && continue
+         
+      # not include java paths
+      grep java ${PATHFILE} > /dev/null 2>&1 && continue 
+      DIRS=0
+
+      # for each file, get paths and add to execution path
+      for EACHPATH in $(cat ${PATHFILE})
+      do
+        STATUS=true
+        # get one line (path) and eval, eval vars like ${HOME} or ${PATH}
+        LOCALPATH="$(eval echo ${EACHPATH} | sed -e 's/^#.*//g;s/ *//g;')"
+        
+        # is this a directory? 
+        [ -z ${LOCALPATH} ] && [ ! -d ${LOCALPATH} ] && STATUS=false && continue
+        [ -z ${LOCALPATH} ] && STATUS=false 
+        [ ! -d ${LOCALPATH} ] && STATUS=false
+
+        log ${STATUS} "Adding dir: ${EACHPATH}"
+        ${STATUS} && LPATH=${LOCALPATH}:${LPATH} && DIRS=$((${DIRS}+1))
+        
+      done
+      [ ${DIRS} -gt 0 ] && log_message "Loading paths ${BASENAME}"
+    done
+    
+    # save temporal path
+    rm -f ${HOME}/paths.d/*.path 
+    echo "${LPATH}" > ${DPATH}
+
+  fi
+
+  # User binaries  
+  [ -d ${HOME}/bin ] && LPATH="${HOME}/bin:${LPATH}"
+
+  # delete double(:) and (.) local search of executables 
+  LPATH="$(echo "${LPATH}" | sed -e 's/::/:/g')"
+  LPATH="$(echo "${LPATH}:${U_PATH}" | sed -e 's/::/:/g;s/\.://g;s/^://g')"
+  
+  # security's issue, depends of you.. PATH=".:${LPATH}"
+  export PATH="${LPATH}"
+
+  # try to preserve as an initial path of user environment
+  U_PATH=${PATH}
+
+}
+
+
+#
+# Set a java version
+java_set_version ()
+{
+  JAVA_ENV="${1}"
+
+  # if not exist or is empty, exit 
+  [ ! -d ${HOME}/paths.d ] || [ -z "$(ls -A ${HOME}/paths.d)" ] && return 0
+
+  # rebuild path and validate
+  JAVA_PROF="${HOME}/paths.d/${JAVA_ENV}"
+
+  # java path file? 
+  grep java "${JAVA_PROF}" > /dev/null 2>&1 || return 0
+  log_info "JAVA Profile ${JAVA_PROF}"
+
+  # Workaround
+  # for OS-X systems, java commands are in Commands/ directory
+  U_LAND="$(uname -s)"
+  BINARIES="bin"
+  [ ${U_LAND} = "Darwin" ] && BINARIES="Commands"
+
+  # rebuild path with java home
+  for EACHPATH in $(cat ${JAVA_PROF})
+  do
+    # expand vars
+    EACHPATH="$(eval echo ${EACHPATH} | sed -e 's/^#.*//g;s/ *//g;')"
+    [ -z ${EACHPATH} ] && continue
+
+    if [ -d ${EACHPATH}/${BINARIES} ] 
+    then
+      # FIX:
+      # must to use java bin of JRE_HOME firts 
+      JAVA_HOME="${EACHPATH}"
+      JRE_HOME="${JAVA_HOME}/jre"
+      [ -d ${JAVA_HOME} ] && PATH="${JAVA_HOME}/${BINARIES}:${U_PATH}"
+      [ -d ${JRE_HOME}  ] && PATH="${JRE_HOME}/${BINARIES}:${PATH}"
+      log_info "Adding new path: ${EACHPATH}/${BINARIES}"
+      alias java="${EACHPATH}/${BINARIES}/java"
+      alias jar="${EACHPATH}/${BINARIES}/jar"
+      alias rmiregistry="${EACHPATH}/${BINARIES}/rmiregistry"
+
+      JAVA_VERSION=$(java -version 2>&1 | grep "version" | sed -e 's/\"//g;s/.*ion //g')
+      log_info "Setting JAVA HOME to ${EACHPATH}"
+      log_info "Setting JAVA Version ${JAVA_VERSION}"
+
+      # workaround hp-ux & java16
+      [ ${U_LAND} = "HP-UX" ] && [ ${JAVA_ENV} = "java16" ] && SHLIB_PATH=${JRE_HOME}/lib/PA_RISC2.0/jli && log_warning "Special case, setting ${SHLIB_PATH}"
+      return 0
+    fi
+  done
+
+}
+
+
+#
+# Sets PS1 and PS2 using an _eye candy_ cmd line, if you're using Git it shows branch name
+set_inputcommand_style ()
+{
+  if [ "${U_LAND}" = "HP-UX" ]
+  then
+    export PS1="$(echo "\n${BLDWHT}[ ${BLDYLW}${U_IPADDRESS}${BLDWHT} | ${CRESET}${U_HOST}${BLDWHT} ] \${PWD} \n${TXTWHT}${USER} ${CRESET}\$ ")"
+  else
+    # if you're a developer, set your git profile (yes...)
+    if [ -s ${U_GIT_PROFILE} ]
+    then
+      export PS1="\n\[${BLDWHT}\][ \[${BLDYLW}\]${U_IPADDRESS}\[${BLDWHT}\] | \[${CRESET}\]${U_HOST}\[${BLDWHT}\] ]\[${BLDGRN}\]\$(__git_ps1 '(%s)')\[${CRESET}\] \W \
+                  \n\[${CRESET}\]${USER} \$ "
+    else
+      export PS1="\n\[${BLDWHT}\][ \[${BLDYLW}\]${U_IPADDRESS}\[${BLDWHT}\] | \[${CRESET}\]${U_HOST}\[${BLDWHT}\] ]\[${CRESET}\] \w \
+                  \n\[${CRESET}\]${USER} \$ "
+    fi
+  fi
+  export PS2=" ..> "
+  unset USERNAME
+}
+
+
+#
+# Get Current Time
+get_current_time ()
+{
+  U_DATE="$(date '+%Y%m%d')"
+  U_EDATE="$(date '+%Y%m.%d')"
+  U_HOUR="$(date '+%H%M')"
+  U_EHOUR="$(date '+%H:%M:%S')"
+  U_TIME="${U_DATE}${U_HOUR}"
+  U_ETIME="${U_EDATE} ${U_EHOUR}"
+
+}
+
+
+#
+# log information depends from boolean status
+log ()
+{
+  STATUS=${1}
+  MESSAGE="${2}"
+
+  if ${STATUS}
+  then
+    log_info "${MESSAGE}"
+  else
+    log_error "${MESSAGE}"
+  fi
+  return 0
+  
+}
+
+
+#
+# log DONE tasks
+log_info ()
+{
+  MESSAGE="${1}"
+  get_current_time
+  puts "${U_ETIME} ${U_HOST} DONE: ${MESSAGE}" >> ${U_LOGFILE}
+  [ ${U_TERM} = "CONSOLE" ] && return 0
+  ${U_DEBG} && puts "${BLDBLU}[${BLDWHT}*${BLDBLU}] ${CRESET}${MESSAGE}"
+  return 0
+
+}
+
+
+#
+# log ERROR tasks
+log_error ()
+{
+  MESSAGE="${1}"
+  get_current_time
+  puts "${U_ETIME} ${U_HOST} FAIL: ${MESSAGE}" >> ${U_LOGFILE}
+  ${U_DEBG} && puts "${BLDBLU}[${BLDRED}i${BLDBLU}] ${CRESET}${MESSAGE}"
+  return 0
+
+}
+
+
+#
+# log WARNING tasks
+log_warning ()
+{
+  MESSAGE="${1}"
+  get_current_time
+  puts "${U_ETIME} ${U_HOST} WARN: ${MESSAGE}" >> ${U_LOGFILE}
+  ${U_DEBG} && puts "${BLDBLU}[${BLDYLW}?${BLDBLU}] ${CRESET}${MESSAGE}"
+  return 0
+
+}
+
+
+#
+# puts some message on terminal
+log_message ()
+{
+  MESSAGE="${1}"
+  [ ${U_TERM} != "CONSOLE" ] && return 0
+  puts " ${BLDBLU}>  ${CRESET}${MESSAGE}"
+  return 0
+
+}
+
+
+#
+# Shows MD5 of this profile
+show_version ()
+{
+  puts "Profile ver.${U_FILEVERSION} (${U_LAND}) \n${U_WORK} \n\nDeveloped by \nAndres Aquino <andres.aquino(at)gmail.com>"
+}
+
+#
+# reling profile properties
+relink_profile ()
+{
+  cd ${HOME}
+  if [ -f .profile ]
+  then
+    mv .profile profile.${U_DATE}
+    ln -sf ~/shell.profile ${HOME}/.profile
+    puts "${BLDWHT}links updated...${CRESET}"
+
+  fi
+
+}
+
+
+#
+# clear profile log
+clear_profile ()
+{
+  if [ -f ${U_LOGFILE} ]
+  then
+    WCOUNT="$(wc -l ${U_LOGFILE} | sed -e "s/.[a-zA-Z].*//g;s/ *//g")"
+    [ ${WCOUNT} -gt 76 ] && echo "" > ${U_LOGFILE}
+  fi
+}
+
+
+#
+# Shows Information about this system
+show_internals ()
+{
+  get_current_time
+  puts "-"
+  puts "${BLDWHT}System Operating ${CRESET}: ${U_LAND}"
+  puts "${BLDWHT}Host Name        ${CRESET}: ${U_HOST}"
+  puts "${BLDWHT}Version profile  ${CRESET}: ${U_FILEVERSION}"
+  puts "${BLDWHT}Unix profile     ${CRESET}: ${HOME}/unix.profile"
+  puts "${BLDWHT}Shell profile    ${CRESET}: ${HOME}/shell.profile"
+  puts "${BLDWHT}Current date     ${CRESET}: ${U_DATE}"
+  puts "${BLDWHT}Current hour     ${CRESET}: ${U_HOUR}"
+  puts "${BLDWHT}IP Address       ${CRESET}: ${U_IPADDRESS}"
+  puts "${BLDWHT}Current PATH     ${CRESET}: ${PATH}"
+
+}
+
