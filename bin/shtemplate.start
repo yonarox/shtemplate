@@ -7,15 +7,16 @@
 
 # Set Java App Name and execution path
 export APP_NAME="shtemplate"
-export APP_HOME="${HOME}/iimon"
+export APP_HOME="${HOME}/shtemplate"
 
 # libraries
-. ${APP_HOME}/lib/unix-commons.lib
-. ${APP_HOME}/lib/jvm-commons.lib
+. ${APP_HOME}/vendor/unix-commons.lib
+. ${APP_HOME}/vendor/java-commons.lib
 
-java_set_environment
-java_set_properties
-java_build_classpath "jar.files"
-java_add_monitor
-java_show_properties
+set_java_environment
+set_java_properties
+build_java_classpath "jar.files"
+add_java_toclasspath "log4j.properties"
+set_java_monitor
+get_java_properties
 

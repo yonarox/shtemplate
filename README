@@ -6,7 +6,6 @@ An Small Shell Template for start/stop simple projects
 ## Developed by
 
 Andres Aquino <andres.aquino(at)gmail.com>
-Roberto Gomez <carlos.realtime(at)gmail.com>
 
 
 ## Source Code
@@ -19,12 +18,39 @@ Roberto Gomez <carlos.realtime(at)gmail.com>
 Our objetive was to build a template to build and execute batch processes,
 with intention of homologate all manners of work or develop until then, as
 consequence of work with many differents point of view. When we saw the 
-facility with that a RoR (Ruby on Rails) application is build then we think
-"hey, we need some similar here.." because until these moment we had
+facility with that a RoR (Ruby on Rails) application is build, then we think
+"hey, we need something like that here.." because until these moment we had
 been work with too many different structures and obviously, to many problems 
 and bugs to resolve.
 
-Do you want help us, send us your commits <andres.aquino(at)gmail.com>
+Do you want help us?
+Send us your commits...
 
+
+## Structure
+
+    .
+    ├── LICENSE
+    ├── README
+    ├── bin                                 Start/Stop script files
+    │   ├── shtemplate.stop
+    │   ├── shtemplate.start
+    │   └── ...
+    ├── config                              Configuring your batch
+    │   ├── java.policy
+    │   └── ...
+    ├── lib                                 Put all your libraries (jar)
+    │   ├── README
+    │   ├── commons-discovery-0.2.jar
+    │   └── ...
+    ├── log                                 All apps needs to log
+    ├── manual
+    │   ├── shtemplate.1
+    │   └── ...
+    ├── tmp
+    └── vendor
+        ├── README
+        ├── java-commons.lib
+        └── ...
 
 # vim: set ts=4 sw=4 sts=4 et si ai tw=80 lbr syntax=markdown:
